@@ -34,15 +34,12 @@ public class Modelo
 	
 	//Constantes MAX MIN
 	
-	public final static double MIN_LAT=3.819966340000008;
-	public final static double MAX_LAT=4.836643219999985;
-	public final static double MIN_LON=-74.39470032000003;
-	public final static double MAX_LON=-73.99132694999997;
-	
+	public final static double MIN_LAT = 3.819966340000008;
+	public final static double MAX_LAT = 4.836643219999985;
+	public final static double MIN_LON = -74.39470032000003;
+	public final static double MAX_LON = -73.9546749999999;
 	
 	//Atributos necesarios para la lectura desde txt
-	private Vertice vertiAgregar;
-	private Vertices_Bogota_Info infoVertice;
 	private Haversine costoHaversiano;
 
 	//El grafo, su nombre lo dice todo
@@ -64,13 +61,16 @@ public class Modelo
 	private int origenPorIngresar, destinoPorIngresar;
 	private double costoPorAgregar;
 	
+	//Atributos necesarios para la carga de JSON de comparendos.
+	private String parteDelComparendo;
+	private ListaEnlazadaQueue<Comparendo> booty = new ListaEnlazadaQueue<Comparendo>();
+	private boolean coordenadasCompi=false;
+	private Comparendo compaAgregar;
 
 	//Atributos necesarios para cargar los sectores
 	
-	
 	private ListaEnlazadaQueue[] sectoresOrdenados;
 	private int numIntervalos;
-	
 	
 	///////////////////////////////////////////////////////Constructor
 
@@ -78,9 +78,10 @@ public class Modelo
 	{
 		parteDelaEstacion = "";
 		parteDelVerti="";
+		parteDelComparendo = "";
 		
 		
-		numIntervalos=10;
+		numIntervalos = 100;
 	}
 
 	//////////////////////////////////////////////////////Dar
@@ -94,88 +95,11 @@ public class Modelo
 	{
 		return estaciones;
 	}
-
-	/////////////////////////////////////////////////////////////////////////////////LECTURA de TXT 
-
- 	public void leerTxtVertix(String archivo) throws FileNotFoundException, IOException 
+	
+	public ListaEnlazadaQueue<Comparendo> darComaprendo()
 	{
-		FileReader f = new FileReader(archivo);
-		BufferedReader b = new BufferedReader(f);
-		String cadena = b.readLine();
-
-		generarSectores(numIntervalos);
-		
-		while( cadena != null) 
-		{	    	  
-			infoVertice = new Vertices_Bogota_Info(0, 0);
-			vertiAgregar = new Vertice(0, infoVertice);
-
-			String[] partes = cadena.split(",");
-
-			int ID = Integer.parseInt(partes[0]);
-			double Longitud = Double.parseDouble(partes[1]);
-			double Latitud = Double.parseDouble(partes[2]);
-			
-			
-			infoVertice.asignarLon(Longitud);
-			infoVertice.asignarLat(Latitud);
-			infoVertice.asignarId(ID);
-			
-			vertiAgregar.asignarId(ID);
-			vertiAgregar.cambiarInfo(infoVertice);
-
-			agregarVerticeACola(infoVertice);
-			cositaBienHecha.addVertex(ID, vertiAgregar);
-			cadena = b.readLine();
-
-		}
-
-		int totalVertices = cositaBienHecha.darV()-1;
-		System.out.println("Total de Vertices: " + totalVertices + "\n--------------");
-		b.close();
-		revisarAgregados();
-		
-		
+		return booty;
 	}
-
-	public void leerTxtArc(String archivo) throws FileNotFoundException, IOException 
-	{
-		costoHaversiano = new Haversine();
-		double costo = 0.0;
-
-		FileReader f = new FileReader(archivo);
-		BufferedReader b = new BufferedReader(f);
-		String cadena = b.readLine();
-
-		while( cadena != null) 
-		{
-			if(!cadena.contains("#"))
-			{
-				String[] partes = cadena.split(" ");
-				int origen = Integer.parseInt(partes[0]);
-
-				for (int i = 1; i< partes.length; i++)
-				{
-					int vecino = Integer.parseInt(partes[i]);
-
-					if(cositaBienHecha.existeVertice(origen) && cositaBienHecha.existeVertice(vecino))
-					{
-						Vertices_Bogota_Info infoOrigen = (Vertices_Bogota_Info) cositaBienHecha.getInfoVertex(origen);
-						Vertices_Bogota_Info infoVecino = (Vertices_Bogota_Info) cositaBienHecha.getInfoVertex(vecino);
-
-						costo = costoHaversiano.distance(infoOrigen.darLat(), infoOrigen.darLon(), infoVecino.darLat(), infoVecino.darLon());
-
-						cositaBienHecha.addEdge(origen, vecino, costo);
-					}
-				}
-			}
-			cadena = b.readLine();
-		}
-
-		System.out.println("Numero de arcos: " + cositaBienHecha.darE() + "\n---------------");
-		b.close(); 
-	}
-
 
 	/////////////////////////////////////////////////////////////////////////Lectura del JSON de las estaciones de policía
 
@@ -311,7 +235,7 @@ public class Modelo
 		}
 	}
 
-	public void componentesDelComparendo(String palabra)
+	private void componentesDelComparendo(String palabra)
 	{
 		if (palabra.equals("OBJECTID"))
 		{
@@ -355,7 +279,7 @@ public class Modelo
 		}
 	}
 
-	public void agregarCoordenada(double pCor)
+	private void agregarCoordenada(double pCor)
 	{
 		if(coordenadas == false)
 		{
@@ -371,7 +295,6 @@ public class Modelo
 
 
 	//////////////////////////////////////////////////////////////////////Lectura del JSON del grafo
-
 
 	public void leerJsonGrafo(String pRuta)
 	{
@@ -432,8 +355,8 @@ public class Modelo
 			}
 			if(parteDelVerti.equals("OBJECTID"))
 			{
-				vertiPorAgregar = new Vertice(valor.getAsInt(), infoPorAgregar);
-				infoPorAgregar = new Vertices_Bogota_Info (0,0);
+				vertiPorAgregar = new Vertice(valor.getAsInt(), infoPorAgregar);				
+				infoPorAgregar.asignarId(valor.getAsInt());
 				
 				//System.out.println(valor);
 				parteDelVerti = "";
@@ -498,7 +421,7 @@ public class Modelo
 		}
 	}
 
-	public void componentesDelGrafo(String palabra)
+	private void componentesDelGrafo(String palabra)
 	{
 		if (palabra.equals("OBJECTID"))
 		{
@@ -530,7 +453,7 @@ public class Modelo
 		}
 	}
 
-	public void agregarCoordenadaGrafo(double pCor)
+	private void agregarCoordenadaGrafo(double pCor)
 	{
 		if(coordenadasGrafo == false)
 		{
@@ -549,122 +472,203 @@ public class Modelo
 		}
 	}
 
+	//////////////////////////////////////////////////////////////////////Lectura del Comparendos
 
-	///////////////////////////////////////////////////////////////////Imprimir el grafo
-
-	public void imprimirLaCosaBienHecha()
-	{
-
-		Graph base = cositaBienHecha;
-
-		TablaHashSondeoLineal vertex = base.vertis;
-		ListaEnlazadaQueue arcos = base.arcos;
-		char comillas = '"';
-
+	public void leerGeoJsonComparendos(String pRuta) 
+	{			
+		JsonParser parser = new JsonParser();
+		FileReader fr = null;
 
 		try 
 		{
-			FileWriter file = new FileWriter("./data/grafoCreado.json");
-
-
-			//Apertura del Archivo
-
-			file.write("{");
-			file.write(comillas+"type"+comillas+":"+comillas+"FeatureCollection"+comillas+",");
-			file.write(comillas+"crs"+comillas+":");
-			file.write("{");
-			file.write(comillas+"type"+comillas+":"+comillas+"name"+comillas +",");
-			file.write(comillas +"properties"+comillas+":");
-			file.write("{");
-			file.write(comillas +"name"+comillas+":"+comillas+"EPSG:4686"+comillas);
-			file.write("}");
-			file.write("},");
-			file.write(comillas+"features"+comillas+":[");
-
-
-			//Lo que se debe imprimir para cada vértice
-			//vertex.darDatos()
-
-			for (int i=0;i<cositaBienHecha.darV()-1;i++)
-			{
-				Vertice aux = (Vertice) vertex.getSet(i);
-				Integer id = (Integer) aux.darId();
-				Vertices_Bogota_Info info = (Vertices_Bogota_Info) aux.darInfo();
-				Double lat = info.darLat(), lon=info.darLon();
-
-				file.write("{");	
-				file.write(comillas+"type"+comillas+":"+comillas+"Feature"+comillas+",");
-				file.write(comillas+"id"+comillas+":"+id+",");
-				file.write(comillas+"geometry"+comillas+":{");
-				file.write(comillas+"type"+comillas+":"+comillas+"Point"+comillas+",");
-				file.write(comillas+"coordinates"+comillas+":[");
-				file.write(lon+",");
-				file.write(lat+"");
-				file.write("]");
-				file.write("},");
-				file.write(comillas+"properties"+comillas+":");
-				file.write("{");
-				file.write(comillas+"OBJECTID"+comillas+":"+id+",");
-				file.write(comillas+"LATITUD"+comillas+":"+lat+",");
-				file.write(comillas+"LONGITUD"+comillas+":"+lon+"");
-				file.write("}");
-				file.write("},");
-			}
-
-
-			//Lo que se debe imprimir para cada arco:
-
-			Node actual = arcos.darPrimerElemento();
-			
-			while (actual!=null)
-			{
-				Arco aux= (Arco) actual.data;
-
-				file.write("{");	
-				file.write(comillas+"type"+comillas+":"+comillas+"Feature"+comillas+",");
-				file.write(comillas+"id"+comillas+":0,");
-
-				file.write(comillas+"properties"+comillas+":");
-				file.write("{");
-
-				file.write(comillas+"ORIGEN"+comillas+":"+aux.darInicial().darId()+",");
-				file.write(comillas+"DESTINO"+comillas+":"+aux.darFinal().darId()+",");
-				file.write(comillas+"COSTO"+comillas+":"+aux.darCostoHaversiano());
-				file.write("}");
-
-
-				//Este depende de si es el último o de si quedan más con la coma
-
-				if (actual.darSiguiente()==null)
-				{
-				file.write("}");
-				}
-				else
-				{
-				file.write("},");
-				}
-
-				actual= actual.darSiguiente();
-			}
-
-
-			//Cerrar el JSON
-			file.write("]");
-			file.write("}");
-
-
-			file.close();
+			fr = new FileReader(pRuta);
 		} 
-		catch (IOException e) 
+		catch (Exception e) 
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+
+		JsonElement datos = parser.parse(fr);
+		dumpJSONElementCompa(datos);
+
+	}
+
+	private void dumpJSONElementCompa(JsonElement elemento) 
+	{
+
+
+		if (elemento.isJsonObject()) 
+		{
+
+			JsonObject obj = elemento.getAsJsonObject();
+
+			java.util.Set<java.util.Map.Entry<String,JsonElement>> entradas = obj.entrySet();
+			java.util.Iterator<java.util.Map.Entry<String,JsonElement>> iter = entradas.iterator();
+
+			while (iter.hasNext()) 
+			{
+				java.util.Map.Entry<String,JsonElement> entrada = iter.next();
+				componentesDelComparendoBob(entrada.getKey());	            
+
+				dumpJSONElementCompa(entrada.getValue());
+			}
+
+		}
+		else if (elemento.isJsonArray()) 
+		{			
+			JsonArray array = elemento.getAsJsonArray();
+			java.util.Iterator<JsonElement> iter = array.iterator();
+
+			while (iter.hasNext()) 
+			{
+				JsonElement entrada = iter.next();
+				dumpJSONElementCompa(entrada);
+			}
+
+		} 
+		else if (elemento.isJsonPrimitive()) 
+		{
+			JsonPrimitive valor = elemento.getAsJsonPrimitive();
+
+			if(compaAgregar == null)
+			{
+				compaAgregar = new Comparendo();
+			}
+
+			if(parteDelComparendo.equals("OBJECTID"))
+			{
+				compaAgregar.asignarObjectid(valor.getAsInt());
+				parteDelComparendo = "";
+			}
+			else if (parteDelComparendo.equals("FECHA_HORA"))
+			{
+				compaAgregar.asignarFecha_Hora(valor.getAsString());
+				parteDelComparendo = "";
+			}
+			else if (parteDelComparendo.equals("MEDIO_DETECCION"))
+			{
+				compaAgregar.asignarMedio_Dete(valor.getAsString());
+				parteDelComparendo = "";
+			}
+			else if (parteDelComparendo.equals("CLASE_VEHICULO"))
+			{
+				compaAgregar.asignarClase_Vehi(valor.getAsString());
+				parteDelComparendo = "";
+			}
+			else if (parteDelComparendo.equals("TIPO_SERVICIO"))
+			{
+				compaAgregar.asignarTipo_Servicio(valor.getAsString());
+				parteDelComparendo = "";
+			}
+			else if (parteDelComparendo.equals("INFRACCION"))
+			{
+				compaAgregar.asignarInfraccion(valor.getAsString());
+				parteDelComparendo = "";
+			}
+			else if (parteDelComparendo.equals("DES_INFRACCION"))
+			{
+				compaAgregar.asignarDes_Infrac(valor.getAsString());
+				parteDelComparendo = "";
+
+			}
+			else if (parteDelComparendo.equals("LOCALIDAD"))
+			{				
+				compaAgregar.asignarLocalidad(valor.getAsString());	
+				parteDelComparendo = "";
+			}
+			else if (parteDelComparendo.equals("MUNICIPIO"))
+			{				
+				compaAgregar.asignarMunicipio(valor.getAsString());	
+				parteDelComparendo = "";
+			}
+			else if (parteDelComparendo.equals("coordinates"))
+			{
+				agregarCoordenadaComparendo(valor.getAsDouble());				
+			}
+
+		} 
+		else if (elemento.isJsonNull()) 
+		{
+			System.out.println("Es NULL");
+		} 
+		else 
+		{
+			System.out.println("Es otra cosa");
+		}
+
+	}
+
+	public void componentesDelComparendoBob(String palabra)
+	{
+		if (palabra.equals("OBJECTID"))
+		{
+			parteDelComparendo = "OBJECTID";
+		}
+		else if (palabra.equals("FECHA_HORA"))
+		{
+			parteDelComparendo = "FECHA_HORA";
+		}
+		else if (palabra.equals("MEDIO_DETECCION"))
+		{
+			parteDelComparendo = "MEDIO_DETECCION";
+		}
+		else if (palabra.equals("CLASE_VEHICULO"))
+		{
+			parteDelComparendo = "CLASE_VEHICULO";
+		}
+		else if (palabra.equals("TIPO_SERVICIO"))
+		{
+			parteDelComparendo = "TIPO_SERVICIO";
+		}
+		else if (palabra.equals("INFRACCION"))
+		{
+			parteDelComparendo = "INFRACCION";
+		}
+		else if (palabra.equals("DES_INFRACCION"))
+		{
+			parteDelComparendo = "DES_INFRACCION";
+		}
+		else if (palabra.equals("LOCALIDAD"))
+		{
+			parteDelComparendo = "LOCALIDAD";
+		}
+		else if (palabra.equals("MUNICIPIO"))
+		{
+			parteDelComparendo = "MUNICIPIO";
+		}
+		else if (palabra.equals("coordinates"))
+		{
+			parteDelComparendo = "coordinates";
+		}
+	}
+
+	public void agregarCoordenadaComparendo(double pCor)
+	{
+		if(coordenadasCompi == false)
+		{
+			compaAgregar.asignarLongitud(pCor);
+			coordenadasCompi = true;
+		}
+
+		else
+		{
+			compaAgregar.asignarLatitud(pCor);
+
+			//AGREGAR//
+
+			coordenadasCompi = false;
+			parteDelComparendo = "";
+			
+			booty.enqueue(compaAgregar);
+			
+			compaAgregar = null;
+
 		}
 	}
 	
+	////////////////////////////////////////////////////////////////////////Distribución del mapa
 	
-	
-	public void generarSectores(int numIntervalos)
+	private void generarSectores()
 	{
 		sectoresOrdenados = new ListaEnlazadaQueue[numIntervalos];
 		
@@ -690,24 +694,24 @@ public class Modelo
 		}
 	}
 	
-	public void agregarVerticeACola(Vertices_Bogota_Info porAgregar)
+	private void agregarVerticeACola(Vertices_Bogota_Info porAgregar)
 	{
-		double tamIntervaloLat=(MAX_LAT-MIN_LAT)/numIntervalos;
-		double tamIntervaloLon=(MAX_LON-MIN_LON)/numIntervalos;
+		double tamIntervaloLat = (MAX_LAT-MIN_LAT)/numIntervalos;
+		double tamIntervaloLon = (MAX_LON-MIN_LON)/numIntervalos;
 		
 		
 		double cocienteLat = (porAgregar.darLat()-MIN_LAT)/tamIntervaloLat;
 		int posLat = (int)Math.floor(cocienteLat);
 		
 		double cocienteLon = (porAgregar.darLon()-MIN_LON)/tamIntervaloLon;
-		int posLon=(int)Math.floor(cocienteLon);
+		int posLon = (int)Math.floor(cocienteLon);
 		
 		//Mitigo el error para maxLat y minLat
-		if (posLat==10)
-				posLat=9;
+		if (posLat==numIntervalos)
+				posLat=numIntervalos-1;
 		
-		if (posLon==10)
-				posLon=9;
+		if (posLon==numIntervalos)
+				posLon=numIntervalos-1;
 			
 		//Recupero la posición del arreglo que contiene esa latitud
 		ListaEnlazadaQueue porLat = sectoresOrdenados[posLat];
@@ -717,23 +721,21 @@ public class Modelo
 		int contadorAux=0;
 		Node actual = porLat.darPrimerElemento();
 		
-		while (contadorAux <posLon)
+		while (contadorAux < posLon)
 		{
 			actual = actual.darSiguiente();
 			contadorAux++;
 		}
 		
-		Sector alQueAgrego = (Sector)actual.data;
-		
+		Sector alQueAgrego = (Sector) actual.data;
 		alQueAgrego.agregarVertice(porAgregar);
 	
 		
 	}
 	
-	
-	public void revisarAgregados()
+	private void revisarAgregados()
 	{
-		for (ListaEnlazadaQueue a:sectoresOrdenados)
+		for (ListaEnlazadaQueue a : sectoresOrdenados)
 		{
 			Node actual = a.darPrimerElemento();
 			
@@ -741,13 +743,15 @@ public class Modelo
 			{
 				
 				Sector pres = (Sector) actual.data;
-				double minlat=pres.darMinLat(), maxlat=pres.darMaxLat(),minlon=pres.darMinLon(), maxlon=pres.darMaxLon();
+
+				double minlat = pres.darMinLat(), maxlat = pres.darMaxLat(), minlon = pres.darMinLon(), maxlon = pres.darMaxLon();
 				ListaEnlazadaQueue vertices = pres.darVerticesAsignados();
 				
-				Node actualVertex=vertices.darPrimerElemento();
+				Node actualVertex = vertices.darPrimerElemento();
+				
 				while (actualVertex!=null)
 				{
-					Vertices_Bogota_Info actVer=(Vertices_Bogota_Info)actualVertex.data;
+					Vertices_Bogota_Info actVer = (Vertices_Bogota_Info) actualVertex.data;
 					double latAux = actVer.darLat(), lonAux = actVer.darLon();
 					
 					if (!(latAux <=maxlat && latAux >=minlat && lonAux<=maxlon && lonAux>=minlon))
@@ -755,19 +759,250 @@ public class Modelo
 						System.out.println("Mal Agregado");
 					}
 					
-					
 					actualVertex=actualVertex.darSiguiente();
-				}
-				
-				
+				}				
 				
 				actual=actual.darSiguiente();
 			}
 		}
 	}
 	
+	public void crearDivisionMapa()
+	{
+		generarSectores();
+		
+		TablaHashSondeoLineal vertex = cositaBienHecha.vertis;
+		
+		for (int i=0;i<cositaBienHecha.darV()-1;i++)
+		{
+			Vertice aux = (Vertice) vertex.getSet(i);
+			Vertices_Bogota_Info info = (Vertices_Bogota_Info) aux.darInfo();
+			
+			agregarVerticeACola(info);
+		}
+		
+		revisarAgregados();
+
+		///////////////////// PARA LAS ESTADISTICAS.
+		
+		for (ListaEnlazadaQueue a : sectoresOrdenados)
+		{
+			Node actual = a.darPrimerElemento();
+			
+			int bla = 0;
+			while (actual !=null)
+			{
+				Sector pres = (Sector) actual.data;
+				bla = pres.darVerticesAsignados().darTamanio();
+				//System.out.println(bla);
+				
+				actual = actual.darSiguiente();
+			}
+		}
+		
+		
+		
+	}
 	
+	//////////////////////////////////////////////////////////////////////// UBICAR COMPARENDOS	
 	
+	private int idMinimoAsignado (Comparendo compi)
+	{
+		double tamIntervaloLat = (MAX_LAT-MIN_LAT)/numIntervalos;
+		double tamIntervaloLon = (MAX_LON-MIN_LON)/numIntervalos;
+			
+		double cocienteLat = (compi.darLatitud()-MIN_LAT)/tamIntervaloLat;
+		int posLat = (int)Math.floor(cocienteLat);
+		
+		double cocienteLon = (compi.darLongitud()-MIN_LON)/tamIntervaloLon;
+		int posLon = (int)Math.floor(cocienteLon);
+		
+		//Mitigo el error para maxLat y minLat
+		if (posLat==numIntervalos)
+				posLat=numIntervalos-1;
+		
+		if (posLon==numIntervalos)
+				posLon=numIntervalos-1;
+			
+		//Recupero la posición del arreglo que contiene esa latitud
+		ListaEnlazadaQueue porLat = sectoresOrdenados[posLat];
+		
+		//En esta cola porLat, el posLon -ésimo nodo tiene las coordenadas deseadas
+		
+		int contadorAux=0;
+		Node actual = porLat.darPrimerElemento();
+		
+		while (contadorAux < posLon && actual != null)
+		{
+			actual = actual.darSiguiente();
+			contadorAux++;
+		}
+		
+		if (actual == null)
+		{
+			System.out.println("Micos y tigrillos");
+		}
+		
+		Sector alQueAgrego = (Sector) actual.data;
+
+		//BUSCAR EL MINIMO DE LOS VERTICES.
+		int idGANADOR = encontrarMInimo(alQueAgrego, compi);
+		
+		return idGANADOR;
+	
+	}
+	
+	private int encontrarMInimo (Sector match, Comparendo compi)
+	{
+		Node actual = match.darVerticesAsignados().darPrimerElemento();
+		double max = 1000000;
+		int idgana = 0;
+		
+		double latCompa = compi.darLatitud();
+		double lonCompa = compi.darLongitud();
+		
+		while (actual != null)
+		{
+			Vertices_Bogota_Info infoActual = (Vertices_Bogota_Info) actual.darData();
+			
+			double latAux = infoActual.darLat();
+			double lonAux = infoActual.darLon();
+			
+			double costoActu = costoHaversiano.distance(latAux, lonAux, latCompa, lonCompa);
+			
+			if(costoActu < max)
+			{
+				max = costoActu;
+				idgana = infoActual.darId();
+			}
+			
+			actual = actual.darSiguiente();
+		}
+		
+		return idgana;
+		
+	}
+
+	public void asigancionComparendos()
+	{
+		Node<Comparendo> actual = booty.darPrimerElemento();
+		TablaHashSondeoLineal vertix = cositaBienHecha.vertis;
+		
+		//ASIGNAR LOS COMPARENDOA A LOS VERTICES.
+		
+		while (actual != null)
+		{	
+			Comparendo actuCompi = actual.darData();
+			
+			int idVerticeGanador = idMinimoAsignado(actuCompi);
+			Vertice ganador = (Vertice) vertix.getSet(idVerticeGanador);
+			
+			ganador.aumentarMatch();
+			
+			actual = actual.darSiguiente();
+		}
+		
+		//ASIGNAR LOS COMPARENDOS A LOS ARCOS.
+		
+		ListaEnlazadaQueue arquitos = cositaBienHecha.arcos;
+		long cantidad = 0;
+		
+		Node arqui = arquitos.darPrimerElemento();
+		
+		while(arqui != null)
+		{
+			Arco actu = (Arco) arqui.darData();
+			
+			Vertice inicial = actu.darInicial();
+			Vertice fin = actu.darFinal();
+			
+			cantidad = inicial.darMatch() + fin.darMatch();
+			actu.asignarCantidad(cantidad);
+
+			arqui = arqui.darSiguiente();
+		}
+		
+		
+	}
+
+	////////////////////////////////////////////////////////////////////////ENCONTRAR VERTICE
+	
+	public Vertice idMinimoAVerti (double lati, double longi)
+	{
+		TablaHashSondeoLineal vertix = cositaBienHecha.vertis;
+		
+		double tamIntervaloLat = (MAX_LAT-MIN_LAT)/numIntervalos;
+		double tamIntervaloLon = (MAX_LON-MIN_LON)/numIntervalos;
+			
+		double cocienteLat = (lati-MIN_LAT)/tamIntervaloLat;
+		int posLat = (int)Math.floor(cocienteLat);
+		
+		double cocienteLon = (longi-MIN_LON)/tamIntervaloLon;
+		int posLon = (int)Math.floor(cocienteLon);
+		
+		//Mitigo el error para maxLat y minLat
+		if (posLat==numIntervalos)
+				posLat=numIntervalos-1;
+		
+		if (posLon==numIntervalos)
+				posLon=numIntervalos-1;
+			
+		//Recupero la posición del arreglo que contiene esa latitud
+		ListaEnlazadaQueue porLat = sectoresOrdenados[posLat];
+		
+		//En esta cola porLat, el posLon -ésimo nodo tiene las coordenadas deseadas
+		
+		int contadorAux=0;
+		Node actual = porLat.darPrimerElemento();
+		
+		while (contadorAux < posLon && actual != null)
+		{
+			actual = actual.darSiguiente();
+			contadorAux++;
+		}
+		
+		if (actual == null)
+		{
+			System.out.println("Micos y tigrillos");
+		}
+		
+		Sector alQueAgrego = (Sector) actual.data;
+
+		//BUSCAR EL MINIMO DE LOS VERTICES.
+		int idGANADOR = encontrarMinimo(alQueAgrego, lati, longi);
+		Vertice ganador = (Vertice) vertix.getSet(idGANADOR);
+		
+		return ganador;
+	
+	}
+	
+	private int encontrarMinimo (Sector match, double lati, double longi)
+	{
+		Node actual = match.darVerticesAsignados().darPrimerElemento();
+		double max = 1000000;
+		int idgana = 0;
+		
+		while (actual != null)
+		{
+			Vertices_Bogota_Info infoActual = (Vertices_Bogota_Info) actual.darData();
+			
+			double latAux = infoActual.darLat();
+			double lonAux = infoActual.darLon();
+			
+			double costoActu = costoHaversiano.distance(latAux, lonAux, lati, longi);
+			
+			if(costoActu < max)
+			{
+				max = costoActu;
+				idgana = infoActual.darId();
+			}
+			
+			actual = actual.darSiguiente();
+		}
+		
+		return idgana;
+		
+	}
 	
 }
 

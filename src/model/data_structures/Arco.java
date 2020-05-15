@@ -5,12 +5,14 @@ public class Arco implements Comparable<Arco> {
 	private transient Vertice inicial; 				//Donde empieza
 	private transient Vertice ifinal;				//Donde termina
 	private double costoHaversiano;					//Peso
+	private long cantidad;
 	
 	public Arco()
 	{
 		inicial = null;
 		ifinal=null;
 		costoHaversiano=0;
+		cantidad = 0;
 	}
 	
 	
@@ -19,6 +21,7 @@ public class Arco implements Comparable<Arco> {
 		costoHaversiano=pCostoHaversiano;
 		inicial=pInicial;
 		ifinal=pFinal;
+		cantidad = 0;
 	}
 	
 	public Vertice darInicial()
@@ -39,6 +42,21 @@ public class Arco implements Comparable<Arco> {
 	public void cambiarCostoHaversiano(double pCosto)
 	{
 		costoHaversiano = pCosto;
+	}
+	
+	public void asignarCantidad (long canti)
+	{
+		cantidad = canti;
+	}
+	
+	public long darCantidad()
+	{
+		return cantidad;
+	}
+	
+	public double darHarvesiano()
+	{
+		return costoHaversiano;
 	}
 	
 	@Override

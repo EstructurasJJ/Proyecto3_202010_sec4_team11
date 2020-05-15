@@ -10,6 +10,9 @@ public class Vertice <K extends Comparable<K>, V extends Comparable<V>> implemen
 	private K id;
 	private V informacion; 
 	
+	//Asignar sus cercanos a el.
+	private int match;
+	
 	private ArrayList<Arco> vecinos;
 	
 	private int visitado;
@@ -23,6 +26,7 @@ public class Vertice <K extends Comparable<K>, V extends Comparable<V>> implemen
 		informacion = pInfo;
 		
 		visitado=0;
+		match = 0;
 	}
 	
 	//Dar atributos
@@ -42,6 +46,10 @@ public class Vertice <K extends Comparable<K>, V extends Comparable<V>> implemen
 		return visitado;
 	}
 	
+	public int darMatch()
+	{
+		return match;
+	}
 	
 	/////////////////////////////////////////////////////////////////////Metodos
 	
@@ -82,8 +90,8 @@ public class Vertice <K extends Comparable<K>, V extends Comparable<V>> implemen
 	
 	// Verificar, desmarcar y marcar como visitido.
 	
-		// 0 es False
-		// 1 es True
+							// 0 es False
+							// 1 es True
 	
 	public boolean revisarVisitado()
 	{
@@ -109,6 +117,13 @@ public class Vertice <K extends Comparable<K>, V extends Comparable<V>> implemen
 	public void asignarId(K ID)
 	{
 		id = ID;
+	}
+	
+	// Cantidad de cercanos que tiene.
+	
+	public void aumentarMatch()
+	{
+		match++;
 	}
 	
 	//////////////////////////////////////////////NO LO USAMOS
