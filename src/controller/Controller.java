@@ -3,10 +3,13 @@ package controller;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Scanner;
 
+import model.data_structures.Graph;
 import model.data_structures.Node;
 import model.data_structures.Vertice;
+import model.logic.Mapita;
 import model.logic.Maps;
 import model.logic.Modelo;
 import view.View;
@@ -23,6 +26,12 @@ public class Controller {
 	public final static String JUEGUEMOS = "./data/Comparendos_DEI_2018_Bogotá_D.C_small.geojson";
 	public final static String COTEJO = "./data/Comparendos_DEI_2018_Bogotá_D.C_50000_.geojson";
 
+	
+	public final static double MIN_LAT = 3.819966340000008;
+	public final static double MAX_LAT = 4.836643219999985;
+	public final static double MIN_LON = -74.39470032000003;
+	public final static double MAX_LON = -73.9546749999999;
+	
 	public Controller ()
 	{
 		view = new View();
@@ -92,6 +101,44 @@ public class Controller {
 				break;
 				
 			case 4:
+				
+				boolean valido = true;
+				
+				System.out.println("Ingrese la latitud inicial: ");
+				Double lat1=Double.parseDouble(lector.next());
+				
+				System.out.println("Ingrese la longitud inicial: ");
+				Double lon1=Double.parseDouble(lector.next());
+				
+				System.out.println("Ingrese la latitud final: ");
+				Double lat2=Double.parseDouble(lector.next());
+				
+				System.out.println("Ingrese la longitud final: ");
+				Double lon2=Double.parseDouble(lector.next());
+				
+				if(lat1 > MAX_LAT || lat1 < MIN_LAT) valido = false;
+				if(lat2 > MAX_LAT || lat2 < MIN_LAT) valido = false;
+				
+				if(lon1 > MAX_LON || lon1 < MIN_LON) valido = false;
+				if(lon2 > MAX_LON || lon2 < MIN_LON) valido = false;
+				
+				if(valido)
+				{
+					Graph mapita = modelo.SPDosUbicaciones(lat1, lon1, lat2, lon2);		
+					
+					Mapita Spam = new Mapita(mapita);
+					System.out.println("Quiero perico");
+					Spam.initFrame("Quiero perico");
+				}
+				else
+				{
+					System.out.println("No son validas las coordenadas.");
+				}
+
+				
+				break;
+				
+			case 5:
 
 				view.printMessage("--------- \n Hasta pronto !! \n---------"); 
 				lector.close();

@@ -68,9 +68,7 @@ public class Arco implements Comparable<Arco> {
 		
 	}
 	
-	
-	//Modificadores de Atributos
-	
+	// TODO JUANJO
 
 	
 }

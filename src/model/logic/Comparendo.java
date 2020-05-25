@@ -150,46 +150,38 @@ public class Comparendo implements Comparable<Comparendo>
 
 	public int compareTo(Comparendo compi) 
 	{
-		double id1 = OBJECTID;
-		double id2 = compi.darObjectid();
+		String tipo1 = TIPO_SERVI;
+		String tipo2 = compi.darTipo_Servicio();
+		
+		String infra1 = INFRACCION;
+		String infra2 = compi.darInfraccion();
+		
+		int valor1 = 0;
+		int valor2 = 0;
+		
+		if (tipo1.equals("Particular"))			valor1 = 1;
+		else if (tipo1.equals("Oficial"))		valor1 = 2;
+		else if (tipo1.equals("Público"))		valor1 = 3;
 
-		if(id1 > id2)
+		
+		if (tipo2.equals("Particular"))			valor2 = 1;
+		else if (tipo2.equals("Oficial"))		valor2 = 2;
+		else if (tipo2.equals("Público"))		valor2 = 3;
+
+		if (valor1 != valor2)
 		{
-			return 1;
-		}
-		else if(id1 < id2)
-		{
-			return -1;
+			if(valor1 > valor2)
+			{
+				return 1;
+			}
+			else
+			{
+				return -1;
+			}
 		}
 		else
 		{
-			return 0;
+			return infra1.compareTo(infra2);
 		}
 	}
-
-
-//	//HASH CODE
-//
-//	public int hashCode()
-//	{
-//		int hash = 17;
-//
-//		hash = 31*hash + ((Integer) OBJECTID).hashCode();
-//
-//		hash = 31*hash + MEDIO_DETE.hashCode();
-//		hash = 31*hash + CLASE_VEHI.hashCode();
-//		hash = 31*hash + TIPO_SERVI.hashCode();
-//		hash = 31*hash + INFRACCION.hashCode();
-//		hash = 31*hash + DES_INFRAC.hashCode();
-//		hash = 31*hash + LOCALIDAD.hashCode();
-//		hash = 31*hash + MUNICIPIO.hashCode();
-//
-//		hash = 31*hash + ((Double) latitud).hashCode();
-//		hash = 31*hash + ((Double) longitud).hashCode();
-//
-//		hash = 31*hash + FECHA_HORA.hashCode();
-//
-//		return hash;
-//	}
-
 }

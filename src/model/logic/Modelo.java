@@ -22,6 +22,7 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 
 import model.data_structures.Arco;
+import model.data_structures.DijkstraSP;
 import model.data_structures.Graph;
 import model.data_structures.ListaEnlazadaQueue;
 import model.data_structures.Node;
@@ -79,7 +80,6 @@ public class Modelo
 		parteDelaEstacion = "";
 		parteDelVerti="";
 		parteDelComparendo = "";
-		
 		
 		numIntervalos = 100;
 	}
@@ -1004,5 +1004,86 @@ public class Modelo
 		
 	}
 	
+	//////////////////////////////////////////////////////////
+	//////////////////// REQUERIMIENTOS //////////////////////
+	//////////////////////////////////////////////////////////
+
+		//////////////////////////////////////////////////////////// Estudiante A
+	
+	//1. Obtener el camino de costo mínimo entre dos ubicaciones geográficas por distancia
+	
+	
+	public Graph SPDosUbicaciones (double lat1, double lon1, double lat2, double lon2 )
+	{
+		int totalVer = 1;
+		double costo = 0;
+		double distancia = 0;
+		
+		/////AÑADO AL MAPA EL INICIO Y FIN.
+		
+		Vertice inicio = idMinimoAVerti(lat1, lon1);
+		Vertice fin = idMinimoAVerti(lat2, lon2);
+		
+		Graph mapita = new Graph(1);
+		mapita.addVertex(inicio.darId(), inicio);
+		mapita.addVertex(fin.darId(), fin);
+		
+		System.out.println("------------");
+		System.out.println("Vertice de inicio: " + inicio.darId());
+		System.out.println("Vertice destino: " + fin.darId() + "\n---------------");
+		
+		/////BUSCO EL CAMINO MÁS CORTO.
+
+		DijkstraSP SP = new DijkstraSP(cositaBienHecha, inicio);
+		ListaEnlazadaQueue ruta = SP.pathTo(fin);
+		
+		if (ruta != null)
+		{
+			Node camino = ruta.darPrimerElemento();
+			
+			while(camino != null)
+			{
+				///// AÑADO EL ARCO AL MAPA E IMPRIMO SU RUTA.
+				
+				Arco actual = (Arco) camino.darData();
+				
+				Vertice inici = actual.darInicial();
+				Vertice fini = actual.darFinal();
+				
+				int idInicio = (int) actual.darInicial().darId();
+				int idDestino = (int) actual.darFinal().darId();
+				double costoActu = actual.darCostoHaversiano();
+				
+				mapita.addVertex(idInicio, inici);
+				mapita.addVertex(idDestino, fini);
+				
+				mapita.addEdge(idInicio, idDestino, costoActu);
+				
+				Vertices_Bogota_Info infoDestino = (Vertices_Bogota_Info) actual.darFinal().darInfo();
+				double lon = infoDestino.darLon();
+				double lat = infoDestino.darLat();
+				
+				System.out.println("Vamos en: " + idDestino + ", Long: " + lon +", Lat: " + lat);
+				
+				totalVer++;
+				costo += actual.darCostoHaversiano();
+				
+				camino = camino.darSiguiente();
+			}
+			
+			System.out.println("---------\n" + " Hemos llegado al destino. Serian 50k." + "\n-------");
+			
+			System.out.println("El número de vertices es: "+ totalVer);
+			System.out.println("La distancia es: "+ costo + "\n-----------");
+		}
+		else 
+		{
+			System.out.println("No existe camino entre esos dos vertices." + "\n---------");
+		}
+		
+		return mapita;
+		
+	}
+
 }
 
