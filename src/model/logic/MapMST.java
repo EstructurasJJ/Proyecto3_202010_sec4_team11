@@ -28,17 +28,17 @@ import model.data_structures.Node;
 import model.data_structures.TablaHashSondeoLineal;
 import model.data_structures.Vertice;
 
-public class Maps<K extends Comparable<K>,V extends Comparable<V>> extends MapView {
+public class MapMST<K extends Comparable<K>,V extends Comparable<V>> extends MapView {
 
 	// Objeto Google Maps
 	private Map map;
 	private Modelo modelo;
 
 	//Coordenadas a pintar RANGO VALIDO
-	private LatLng[] locations = {new LatLng(4.597714, -74.094723), new LatLng(4.621360, -74.094723), new LatLng(4.597714, -74.062707), new LatLng(4.621360, -74.062707) }; //Coordenadas de los vertices inicio, intermedio y fin.		
+	private LatLng[] locations = {};
 	private LatLng centro = new LatLng(4.609537, -74.078715);
 
-	public Maps(Graph grafo)
+	public MapMST(Graph grafo)
 	{	
 		//Recupero los bertices
 		TablaHashSondeoLineal vertices = grafo.vertis;
@@ -84,44 +84,35 @@ public class Maps<K extends Comparable<K>,V extends Comparable<V>> extends MapVi
 						double lon = infoVertiActu.darLon();
 						double lat = infoVertiActu.darLat();
 
-						//Si esta dentro del rango
-						if(lon>=-74.094723 && lon<=-74.062707 && lat>=4.597714 && lat<=4.621360)
+						//Añado el vertice
+						LatLng coor = new LatLng(lat, lon);
+
+						Circle middleLoc1 = new Circle(map);
+						middleLoc1.setOptions(middleLocOpt);
+						middleLoc1.setCenter(coor); 
+						middleLoc1.setRadius(15);
+
+						//Recupero los vecinos del vertice actual.
+						Iterator vecinos = vertiActual.iterator();
+
+						//Guardo los vecinos
+						ArrayList<LatLng> veci = new ArrayList<LatLng>();
+						veci.add(coor);
+
+						while(vecinos.hasNext())
 						{
-							//Añado el vertice
-							LatLng coor = new LatLng(lat, lon);
+							//Recorro los vecinos
+							Arco veciActual = (Arco) vecinos.next();
 
-							Circle middleLoc1 = new Circle(map);
-							middleLoc1.setOptions(middleLocOpt);
-							middleLoc1.setCenter(coor); 
-							middleLoc1.setRadius(15);
+							//Recupero el vertice del vecino y su info.
+							Vertice veciActu = veciActual.darFinal();
+							Vertices_Bogota_Info infoVeciActu = (Vertices_Bogota_Info) veciActu.darInfo();
 
-							//Recupero los vecinos del vertice actual.
-							Iterator vecinos = vertiActual.iterator();
+							lon = infoVeciActu.darLon();
+							lat = infoVeciActu.darLat();
 
-							//Guardo los vecinos
-							ArrayList<LatLng> veci = new ArrayList<LatLng>();
+							coor = new LatLng(lat, lon);
 							veci.add(coor);
-
-							while(vecinos.hasNext())
-							{
-								//Recorro los vecinos
-								Arco veciActual = (Arco) vecinos.next();
-
-								//Recupero el vertice del vecino y su info.
-								Vertice veciActu = veciActual.darFinal();
-								Vertices_Bogota_Info infoVeciActu = (Vertices_Bogota_Info) veciActu.darInfo();
-
-								lon = infoVeciActu.darLon();
-								lat = infoVeciActu.darLat();
-
-								//Si esta en el rango lo añado.
-								if(lon>=-74.094723 && lon<=-74.062707 && lat>=4.597714 && lat<=4.621360)
-								{
-									coor = new LatLng(lat, lon);
-									veci.add(coor);
-								}
-							}
-
 
 							LatLng[] locat = new LatLng[veci.size()];
 

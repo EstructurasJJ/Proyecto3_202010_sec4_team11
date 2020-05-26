@@ -9,7 +9,8 @@ import java.util.Scanner;
 import model.data_structures.Graph;
 import model.data_structures.Node;
 import model.data_structures.Vertice;
-import model.logic.Mapita;
+import model.logic.MapMST;
+import model.logic.MapitaSP;
 import model.logic.Maps;
 import model.logic.Modelo;
 import view.View;
@@ -94,7 +95,8 @@ public class Controller {
 				
 			case 3:
 				
-				Maps mapa = new Maps(modelo);
+				Graph mapi = modelo.darGrafo();
+				Maps mapa = new Maps(mapi);
 				System.out.println("Es billísimo");
 				mapa.initFrame("Es billísimo");
 				
@@ -126,7 +128,7 @@ public class Controller {
 				{
 					Graph mapita = modelo.SPDosUbicaciones(lat1, lon1, lat2, lon2);		
 					
-					Mapita Spam = new Mapita(mapita);
+					MapitaSP Spam = new MapitaSP(mapita);
 					System.out.println("Quiero perico");
 					Spam.initFrame("Quiero perico");
 				}
@@ -139,6 +141,16 @@ public class Controller {
 				break;
 				
 			case 5:
+				
+				Graph mapita = (Graph) modelo.vamosAver();	
+				
+				MapMST Spam = new MapMST(mapita);
+				System.out.println("Quiero perico de calidad");
+				Spam.initFrame("Quiero perico de calidad");
+				
+				break;
+				
+			case 6:
 
 				view.printMessage("--------- \n Hasta pronto !! \n---------"); 
 				lector.close();

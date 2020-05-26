@@ -84,17 +84,17 @@ public class DijkstraSP
 		return distTo[v] < Double.POSITIVE_INFINITY;
 	}
 
-	public ListaEnlazadaQueue<Arco> pathTo(Vertice vw) 
+	public ListaEnlazadaStack<Arco> pathTo(Vertice vw) 
 	{
 		validateVertex(vw);
 		
 		int v = (int) vw.darId();
 		if (!hasPathTo(vw)) return null;
 		
-		ListaEnlazadaQueue<Arco> path = new ListaEnlazadaQueue<Arco>();
+		ListaEnlazadaStack<Arco> path = new ListaEnlazadaStack<Arco>();
 		for (Arco e = edgeTo[v]; e != null; e = edgeTo[(int) e.darInicial().darId()]) 
 		{
-			path.enqueue(e);
+			path.push(e);
 		}
 		
 		return path;

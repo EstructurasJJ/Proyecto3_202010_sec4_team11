@@ -24,7 +24,10 @@ import com.google.gson.JsonSyntaxException;
 import model.data_structures.Arco;
 import model.data_structures.DijkstraSP;
 import model.data_structures.Graph;
+import model.data_structures.KruskalMST;
 import model.data_structures.ListaEnlazadaQueue;
+import model.data_structures.ListaEnlazadaStack;
+import model.data_structures.MaxHeapCP;
 import model.data_structures.Node;
 import model.data_structures.TablaHashSondeoLineal;
 import model.data_structures.Vertice;
@@ -1035,17 +1038,14 @@ public class Modelo
 		/////BUSCO EL CAMINO MÁS CORTO.
 
 		DijkstraSP SP = new DijkstraSP(cositaBienHecha, inicio);
-		ListaEnlazadaQueue ruta = SP.pathTo(fin);
+		ListaEnlazadaStack ruta = SP.pathTo(fin);
 		
 		if (ruta != null)
-		{
-			Node camino = ruta.darPrimerElemento();
-			
-			while(camino != null)
+		{			
+			while(ruta.darTamaño() > 0)
 			{
 				///// AÑADO EL ARCO AL MAPA E IMPRIMO SU RUTA.
-				
-				Arco actual = (Arco) camino.darData();
+				Arco actual = (Arco) ruta.pop();
 				
 				Vertice inici = actual.darInicial();
 				Vertice fini = actual.darFinal();
@@ -1068,7 +1068,6 @@ public class Modelo
 				totalVer++;
 				costo += actual.darCostoHaversiano();
 				
-				camino = camino.darSiguiente();
 			}
 			
 			System.out.println("---------\n" + " Hemos llegado al destino. Serian 50k." + "\n-------");
@@ -1085,5 +1084,76 @@ public class Modelo
 		
 	}
 
+
+	//Probar Kruskal
+	
+	public Graph vamosAver()
+	{		
+		KruskalMST vamosPibe = new KruskalMST(cositaBienHecha);
+		ListaEnlazadaQueue queSePuede = vamosPibe.darMST();
+		Graph mapita = new Graph(1);
+		double total = 0;
+		
+		if(queSePuede != null)
+		{
+			Node actual = queSePuede.darPrimerElemento();
+			while(actual != null)
+			{
+				Arco arqui = (Arco) actual.darData();
+				
+				Vertice inicio = arqui.darInicial();
+				Vertice fin = arqui.darFinal();
+				
+				int idInicio = (int) inicio.darId();
+				int idFin = (int) fin.darId();
+				double costo = arqui.darCostoHaversiano();
+				total = total + costo;
+				
+				if(!mapita.existeVertice(idInicio)) mapita.addVertex(idInicio, inicio);
+				if(!mapita.existeVertice(idFin))	mapita.addVertex(idFin, fin);
+				if(mapita.existeVertice(idInicio) && mapita.existeVertice(idFin)) mapita.addEdge(idInicio, idFin, costo);
+				
+				actual = actual.darSiguiente();
+			}
+		}
+		else
+		{
+			System.out.println("Micos y tigrillos...");
+		}
+		
+		
+		System.out.println("Total de vertices: " + (mapita.darV()-1));
+		System.out.println("Total de arcos: " + (mapita.darE()));
+		System.out.println("Costo total: " + total);
+		
+		return mapita;
+	}
+
+	//Ordenar Comparendos
+	
+	private ListaEnlazadaQueue darNComparendosGraves(int N)
+	{
+		ListaEnlazadaQueue<Comparendo> resultados = new ListaEnlazadaQueue<Comparendo>();
+		MaxHeapCP<Comparendo> temporal = new MaxHeapCP<Comparendo>(1);
+		
+		Node actual = booty.darPrimerElemento();
+		
+		while(actual != null)
+		{
+			Comparendo añadir = (Comparendo) actual.darData();
+			temporal.añadir(añadir);		
+			actual = actual.darSiguiente();
+		}
+		
+		int conta = 0;
+		while(conta <= N)
+		{
+			Comparendo mejor = temporal.devolverMax();
+			resultados.enqueue(mejor);
+			conta++;
+		}
+		
+		return resultados;		
+	}
 }
 

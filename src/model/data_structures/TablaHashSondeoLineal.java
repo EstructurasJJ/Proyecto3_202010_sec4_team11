@@ -145,12 +145,14 @@ public class TablaHashSondeoLineal <K extends Comparable<K> ,V extends Comparabl
 		if(key!=null)
 		{
 			int i = hash(key);
-			for (i = hash(key); keys[i] != null; i = (i+1) % Capacidad)
+			int conta = 0;
+			for (i = hash(key); keys[i] != null && conta < Capacidad; i = (i+1) % Capacidad)
 			{
 				if(keys[i].equals(key))
 				{
 					return vals[i].iterator();
 				}
+				conta++;
 			}
 
 		}

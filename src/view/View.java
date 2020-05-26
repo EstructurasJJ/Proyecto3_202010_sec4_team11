@@ -18,7 +18,8 @@ public class View
 			System.out.println("2. Encontrar el vertice más cercano dada una ubicación geografica.");
 			System.out.println("3. Desplegar grafo limitado en mapa.");
 			System.out.println("4. Menor camino entre dos ubicaciones.");
-			System.out.println("5. Exit");
+			System.out.println("5. Intentar Kruskal..");
+			System.out.println("6. Exit");
 			System.out.println("Dar el numero de opcion a resolver, luego oprimir tecla Return: (e.g., 1):");
 		}
 
