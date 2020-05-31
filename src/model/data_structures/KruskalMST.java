@@ -21,7 +21,7 @@ public class KruskalMST
 			actual = actual.darSiguiente();
 		}
 		
-		Uf uf = new Uf(grafito.darV());
+		Uf uf = new Uf(228046);
 		
         while (!pq.isEmpty() && mst.darTamanio() < grafito.darV() - 1) 
         {

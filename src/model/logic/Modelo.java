@@ -20,6 +20,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
+import com.teamdev.jxmaps.i;
 
 import model.data_structures.Arco;
 import model.data_structures.DijkstraSP;
@@ -31,18 +32,19 @@ import model.data_structures.MaxHeapCP;
 import model.data_structures.Node;
 import model.data_structures.TablaHashSondeoLineal;
 import model.data_structures.Vertice;
+import model.data_structures.VirgilVanDijkstra;
 
 
 public class Modelo 
 {
-	
+
 	//Constantes MAX MIN
-	
+
 	public final static double MIN_LAT = 3.819966340000008;
 	public final static double MAX_LAT = 4.836643219999985;
 	public final static double MIN_LON = -74.39470032000003;
 	public final static double MAX_LON = -73.9546749999999;
-	
+
 	//Atributos necesarios para la lectura desde txt
 	private Haversine costoHaversiano;
 
@@ -64,7 +66,7 @@ public class Modelo
 
 	private int origenPorIngresar, destinoPorIngresar;
 	private double costoPorAgregar;
-	
+
 	//Atributos necesarios para la carga de JSON de comparendos.
 	private String parteDelComparendo;
 	private ListaEnlazadaQueue<Comparendo> booty = new ListaEnlazadaQueue<Comparendo>();
@@ -72,10 +74,10 @@ public class Modelo
 	private Comparendo compaAgregar;
 
 	//Atributos necesarios para cargar los sectores
-	
+
 	private ListaEnlazadaQueue[] sectoresOrdenados;
 	private int numIntervalos;
-	
+
 	///////////////////////////////////////////////////////Constructor
 
 	public Modelo()
@@ -83,7 +85,7 @@ public class Modelo
 		parteDelaEstacion = "";
 		parteDelVerti="";
 		parteDelComparendo = "";
-		
+
 		numIntervalos = 100;
 	}
 
@@ -93,12 +95,12 @@ public class Modelo
 	{
 		return cositaBienHecha;
 	}
-	
+
 	public ListaEnlazadaQueue<EstPol> darEstaciones()
 	{
 		return estaciones;
 	}
-	
+
 	public ListaEnlazadaQueue<Comparendo> darComaprendo()
 	{
 		return booty;
@@ -302,7 +304,7 @@ public class Modelo
 	public void leerJsonGrafo(String pRuta)
 	{
 		cositaBienHecha = new Graph(1);
-		
+
 		JsonParser parser= new JsonParser();
 		FileReader fr=null;
 
@@ -360,14 +362,14 @@ public class Modelo
 			{
 				vertiPorAgregar = new Vertice(valor.getAsInt(), infoPorAgregar);				
 				infoPorAgregar.asignarId(valor.getAsInt());
-				
+
 				//System.out.println(valor);
 				parteDelVerti = "";
 			}
 			else if (parteDelVerti.equals("LATITUD"))
 			{
 				infoPorAgregar.asignarLat(valor.getAsDouble());
-				
+
 				//System.out.println(compaAgregar.darFecha_Hora().toString());
 				parteDelVerti = "";
 			}
@@ -375,7 +377,7 @@ public class Modelo
 			{
 				infoPorAgregar.asignarLon(valor.getAsDouble());
 				vertiPorAgregar.cambiarInfo(infoPorAgregar);
-				
+
 				//Agregar VERTICE
 				cositaBienHecha.addVertex(vertiPorAgregar.darId(), vertiPorAgregar);
 
@@ -396,10 +398,10 @@ public class Modelo
 			else if (parteDelVerti.equals("COSTO"))
 			{
 				costoPorAgregar = valor.getAsDouble();
-				
+
 				//Añadir Arco
 				cositaBienHecha.addEdge(origenPorIngresar, destinoPorIngresar, costoPorAgregar);
-				
+
 				parteDelVerti = "";
 				origenPorIngresar=0;
 				destinoPorIngresar=0;
@@ -661,417 +663,417 @@ public class Modelo
 
 			coordenadasCompi = false;
 			parteDelComparendo = "";
-			
+
 			booty.enqueue(compaAgregar);
-			
+
 			compaAgregar = null;
 
 		}
 	}
-	
+
 	////////////////////////////////////////////////////////////////////////Distribución del mapa
-	
+
 	private void generarSectores()
 	{
 		sectoresOrdenados = new ListaEnlazadaQueue[numIntervalos];
-		
+
 		double tamIntervaloLat=(MAX_LAT-MIN_LAT)/numIntervalos;
 		double tamIntervaloLon=(MAX_LON-MIN_LON)/numIntervalos;
-		
+
 		for (int i =1;i<=numIntervalos;i++)
 		{
 			sectoresOrdenados[i-1]=new ListaEnlazadaQueue();
-			
+
 			for (int j=1;j<=numIntervalos;j++)
 			{
 				double minLatAux = MIN_LAT + ((i-1)*tamIntervaloLat);
 				double maxLatAux = MIN_LAT + (i*tamIntervaloLat);
-				
+
 				double minLonAux = MIN_LON + ((j-1)*tamIntervaloLon);
 				double maxLonAux = MIN_LON+ (j*tamIntervaloLon);
-				
+
 				Sector porAgregar = new Sector (minLonAux,maxLonAux,minLatAux,maxLatAux);
-				
+
 				sectoresOrdenados[i-1].enqueue(porAgregar);
 			}
 		}
 	}
-	
+
 	private void agregarVerticeACola(Vertices_Bogota_Info porAgregar)
 	{
 		double tamIntervaloLat = (MAX_LAT-MIN_LAT)/numIntervalos;
 		double tamIntervaloLon = (MAX_LON-MIN_LON)/numIntervalos;
-		
-		
+
+
 		double cocienteLat = (porAgregar.darLat()-MIN_LAT)/tamIntervaloLat;
 		int posLat = (int)Math.floor(cocienteLat);
-		
+
 		double cocienteLon = (porAgregar.darLon()-MIN_LON)/tamIntervaloLon;
 		int posLon = (int)Math.floor(cocienteLon);
-		
+
 		//Mitigo el error para maxLat y minLat
 		if (posLat==numIntervalos)
-				posLat=numIntervalos-1;
-		
+			posLat=numIntervalos-1;
+
 		if (posLon==numIntervalos)
-				posLon=numIntervalos-1;
-			
+			posLon=numIntervalos-1;
+
 		//Recupero la posición del arreglo que contiene esa latitud
 		ListaEnlazadaQueue porLat = sectoresOrdenados[posLat];
-		
+
 		//En esta cola porLat, el posLon -ésimo nodo tiene las coordenadas deseadas
-		
+
 		int contadorAux=0;
 		Node actual = porLat.darPrimerElemento();
-		
+
 		while (contadorAux < posLon)
 		{
 			actual = actual.darSiguiente();
 			contadorAux++;
 		}
-		
+
 		Sector alQueAgrego = (Sector) actual.data;
 		alQueAgrego.agregarVertice(porAgregar);
-	
-		
+
+
 	}
-	
+
 	private void revisarAgregados()
 	{
 		for (ListaEnlazadaQueue a : sectoresOrdenados)
 		{
 			Node actual = a.darPrimerElemento();
-			
+
 			while (actual !=null)
 			{
-				
+
 				Sector pres = (Sector) actual.data;
 
 				double minlat = pres.darMinLat(), maxlat = pres.darMaxLat(), minlon = pres.darMinLon(), maxlon = pres.darMaxLon();
 				ListaEnlazadaQueue vertices = pres.darVerticesAsignados();
-				
+
 				Node actualVertex = vertices.darPrimerElemento();
-				
+
 				while (actualVertex!=null)
 				{
 					Vertices_Bogota_Info actVer = (Vertices_Bogota_Info) actualVertex.data;
 					double latAux = actVer.darLat(), lonAux = actVer.darLon();
-					
+
 					if (!(latAux <=maxlat && latAux >=minlat && lonAux<=maxlon && lonAux>=minlon))
 					{
 						System.out.println("Mal Agregado");
 					}
-					
+
 					actualVertex=actualVertex.darSiguiente();
 				}				
-				
+
 				actual=actual.darSiguiente();
 			}
 		}
 	}
-	
+
 	public void crearDivisionMapa()
 	{
 		generarSectores();
-		
+
 		TablaHashSondeoLineal vertex = cositaBienHecha.vertis;
-		
+
 		for (int i=0;i<cositaBienHecha.darV()-1;i++)
 		{
 			Vertice aux = (Vertice) vertex.getSet(i);
 			Vertices_Bogota_Info info = (Vertices_Bogota_Info) aux.darInfo();
-			
+
 			agregarVerticeACola(info);
 		}
-		
+
 		revisarAgregados();
 
 		///////////////////// PARA LAS ESTADISTICAS.
-		
+
 		for (ListaEnlazadaQueue a : sectoresOrdenados)
 		{
 			Node actual = a.darPrimerElemento();
-			
+
 			int bla = 0;
 			while (actual !=null)
 			{
 				Sector pres = (Sector) actual.data;
 				bla = pres.darVerticesAsignados().darTamanio();
 				//System.out.println(bla);
-				
+
 				actual = actual.darSiguiente();
 			}
 		}
-		
-		
-		
+
+
+
 	}
-	
+
 	//////////////////////////////////////////////////////////////////////// UBICAR COMPARENDOS	
-	
+
 	private int idMinimoAsignado (Comparendo compi)
 	{
 		double tamIntervaloLat = (MAX_LAT-MIN_LAT)/numIntervalos;
 		double tamIntervaloLon = (MAX_LON-MIN_LON)/numIntervalos;
-			
+
 		double cocienteLat = (compi.darLatitud()-MIN_LAT)/tamIntervaloLat;
 		int posLat = (int)Math.floor(cocienteLat);
-		
+
 		double cocienteLon = (compi.darLongitud()-MIN_LON)/tamIntervaloLon;
 		int posLon = (int)Math.floor(cocienteLon);
-		
+
 		//Mitigo el error para maxLat y minLat
 		if (posLat==numIntervalos)
-				posLat=numIntervalos-1;
-		
+			posLat=numIntervalos-1;
+
 		if (posLon==numIntervalos)
-				posLon=numIntervalos-1;
-			
+			posLon=numIntervalos-1;
+
 		//Recupero la posición del arreglo que contiene esa latitud
 		ListaEnlazadaQueue porLat = sectoresOrdenados[posLat];
-		
+
 		//En esta cola porLat, el posLon -ésimo nodo tiene las coordenadas deseadas
-		
+
 		int contadorAux=0;
 		Node actual = porLat.darPrimerElemento();
-		
+
 		while (contadorAux < posLon && actual != null)
 		{
 			actual = actual.darSiguiente();
 			contadorAux++;
 		}
-		
+
 		if (actual == null)
 		{
 			System.out.println("Micos y tigrillos");
 		}
-		
+
 		Sector alQueAgrego = (Sector) actual.data;
 
 		//BUSCAR EL MINIMO DE LOS VERTICES.
 		int idGANADOR = encontrarMInimo(alQueAgrego, compi);
-		
+
 		return idGANADOR;
-	
+
 	}
-	
+
 	private int encontrarMInimo (Sector match, Comparendo compi)
 	{
 		Node actual = match.darVerticesAsignados().darPrimerElemento();
 		double max = 1000000;
 		int idgana = 0;
-		
+
 		double latCompa = compi.darLatitud();
 		double lonCompa = compi.darLongitud();
-		
+
 		while (actual != null)
 		{
 			Vertices_Bogota_Info infoActual = (Vertices_Bogota_Info) actual.darData();
-			
+
 			double latAux = infoActual.darLat();
 			double lonAux = infoActual.darLon();
-			
+
 			double costoActu = costoHaversiano.distance(latAux, lonAux, latCompa, lonCompa);
-			
+
 			if(costoActu < max)
 			{
 				max = costoActu;
 				idgana = infoActual.darId();
 			}
-			
+
 			actual = actual.darSiguiente();
 		}
-		
+
 		return idgana;
-		
+
 	}
 
 	public void asigancionComparendos()
 	{
 		Node<Comparendo> actual = booty.darPrimerElemento();
 		TablaHashSondeoLineal vertix = cositaBienHecha.vertis;
-		
-		//ASIGNAR LOS COMPARENDOA A LOS VERTICES.
-		
+
+		//ASIGNAR LOS COMPARENDOs A LOS VERTICES.
+
 		while (actual != null)
 		{	
 			Comparendo actuCompi = actual.darData();
-			
+
 			int idVerticeGanador = idMinimoAsignado(actuCompi);
 			Vertice ganador = (Vertice) vertix.getSet(idVerticeGanador);
-			
+
 			ganador.aumentarMatch();
-			
+
 			actual = actual.darSiguiente();
 		}
-		
+
 		//ASIGNAR LOS COMPARENDOS A LOS ARCOS.
-		
+
 		ListaEnlazadaQueue arquitos = cositaBienHecha.arcos;
 		long cantidad = 0;
-		
+
 		Node arqui = arquitos.darPrimerElemento();
-		
+
 		while(arqui != null)
 		{
 			Arco actu = (Arco) arqui.darData();
-			
+
 			Vertice inicial = actu.darInicial();
 			Vertice fin = actu.darFinal();
-			
+
 			cantidad = inicial.darMatch() + fin.darMatch();
 			actu.asignarCantidad(cantidad);
 
 			arqui = arqui.darSiguiente();
 		}
-		
-		
+
+
 	}
 
 	////////////////////////////////////////////////////////////////////////ENCONTRAR VERTICE
-	
+
 	public Vertice idMinimoAVerti (double lati, double longi)
 	{
 		TablaHashSondeoLineal vertix = cositaBienHecha.vertis;
-		
+
 		double tamIntervaloLat = (MAX_LAT-MIN_LAT)/numIntervalos;
 		double tamIntervaloLon = (MAX_LON-MIN_LON)/numIntervalos;
-			
+
 		double cocienteLat = (lati-MIN_LAT)/tamIntervaloLat;
 		int posLat = (int)Math.floor(cocienteLat);
-		
+
 		double cocienteLon = (longi-MIN_LON)/tamIntervaloLon;
 		int posLon = (int)Math.floor(cocienteLon);
-		
+
 		//Mitigo el error para maxLat y minLat
 		if (posLat==numIntervalos)
-				posLat=numIntervalos-1;
-		
+			posLat=numIntervalos-1;
+
 		if (posLon==numIntervalos)
-				posLon=numIntervalos-1;
-			
+			posLon=numIntervalos-1;
+
 		//Recupero la posición del arreglo que contiene esa latitud
 		ListaEnlazadaQueue porLat = sectoresOrdenados[posLat];
-		
+
 		//En esta cola porLat, el posLon -ésimo nodo tiene las coordenadas deseadas
-		
+
 		int contadorAux=0;
 		Node actual = porLat.darPrimerElemento();
-		
+
 		while (contadorAux < posLon && actual != null)
 		{
 			actual = actual.darSiguiente();
 			contadorAux++;
 		}
-		
+
 		if (actual == null)
 		{
 			System.out.println("Micos y tigrillos");
 		}
-		
+
 		Sector alQueAgrego = (Sector) actual.data;
 
 		//BUSCAR EL MINIMO DE LOS VERTICES.
 		int idGANADOR = encontrarMinimo(alQueAgrego, lati, longi);
 		Vertice ganador = (Vertice) vertix.getSet(idGANADOR);
-		
+
 		return ganador;
-	
+
 	}
-	
+
 	private int encontrarMinimo (Sector match, double lati, double longi)
 	{
 		Node actual = match.darVerticesAsignados().darPrimerElemento();
 		double max = 1000000;
 		int idgana = 0;
-		
+
 		while (actual != null)
 		{
 			Vertices_Bogota_Info infoActual = (Vertices_Bogota_Info) actual.darData();
-			
+
 			double latAux = infoActual.darLat();
 			double lonAux = infoActual.darLon();
-			
+
 			double costoActu = costoHaversiano.distance(latAux, lonAux, lati, longi);
-			
+
 			if(costoActu < max)
 			{
 				max = costoActu;
 				idgana = infoActual.darId();
 			}
-			
+
 			actual = actual.darSiguiente();
 		}
-		
+
 		return idgana;
-		
+
 	}
-	
+
 	//////////////////////////////////////////////////////////
 	//////////////////// REQUERIMIENTOS //////////////////////
 	//////////////////////////////////////////////////////////
 
-		//////////////////////////////////////////////////////////// Estudiante A
-	
+	//////////////////////////////////////////////////////////// Estudiante A
+
 	//1. Obtener el camino de costo mínimo entre dos ubicaciones geográficas por distancia
-	
-	
+
+
 	public Graph SPDosUbicaciones (double lat1, double lon1, double lat2, double lon2 )
 	{
 		int totalVer = 1;
 		double costo = 0;
 		double distancia = 0;
-		
+
 		/////AÑADO AL MAPA EL INICIO Y FIN.
-		
+
 		Vertice inicio = idMinimoAVerti(lat1, lon1);
 		Vertice fin = idMinimoAVerti(lat2, lon2);
-		
+
 		Graph mapita = new Graph(1);
 		mapita.addVertex(inicio.darId(), inicio);
 		mapita.addVertex(fin.darId(), fin);
-		
+
 		System.out.println("------------");
 		System.out.println("Vertice de inicio: " + inicio.darId());
 		System.out.println("Vertice destino: " + fin.darId() + "\n---------------");
-		
+
 		/////BUSCO EL CAMINO MÁS CORTO.
 
 		DijkstraSP SP = new DijkstraSP(cositaBienHecha, inicio);
 		ListaEnlazadaStack ruta = SP.pathTo(fin);
-		
+
 		if (ruta != null)
 		{			
 			while(ruta.darTamaño() > 0)
 			{
 				///// AÑADO EL ARCO AL MAPA E IMPRIMO SU RUTA.
 				Arco actual = (Arco) ruta.pop();
-				
+
 				Vertice inici = actual.darInicial();
 				Vertice fini = actual.darFinal();
-				
+
 				int idInicio = (int) actual.darInicial().darId();
 				int idDestino = (int) actual.darFinal().darId();
 				double costoActu = actual.darCostoHaversiano();
-				
+
 				mapita.addVertex(idInicio, inici);
 				mapita.addVertex(idDestino, fini);
-				
+
 				mapita.addEdge(idInicio, idDestino, costoActu);
-				
+
 				Vertices_Bogota_Info infoDestino = (Vertices_Bogota_Info) actual.darFinal().darInfo();
 				double lon = infoDestino.darLon();
 				double lat = infoDestino.darLat();
-				
+
 				System.out.println("Vamos en: " + idDestino + ", Long: " + lon +", Lat: " + lat);
-				
+
 				totalVer++;
 				costo += actual.darCostoHaversiano();
-				
+
 			}
-			
+
 			System.out.println("---------\n" + " Hemos llegado al destino. Serian 50k." + "\n-------");
-			
+
 			System.out.println("El número de vertices es: "+ totalVer);
 			System.out.println("La distancia es: "+ costo + "\n-----------");
 		}
@@ -1079,40 +1081,40 @@ public class Modelo
 		{
 			System.out.println("No existe camino entre esos dos vertices." + "\n---------");
 		}
-		
+
 		return mapita;
-		
+
 	}
 
 
 	//Probar Kruskal
-	
+
 	public Graph vamosAver()
 	{		
 		KruskalMST vamosPibe = new KruskalMST(cositaBienHecha);
 		ListaEnlazadaQueue queSePuede = vamosPibe.darMST();
 		Graph mapita = new Graph(1);
 		double total = 0;
-		
+
 		if(queSePuede != null)
 		{
 			Node actual = queSePuede.darPrimerElemento();
 			while(actual != null)
 			{
 				Arco arqui = (Arco) actual.darData();
-				
+
 				Vertice inicio = arqui.darInicial();
 				Vertice fin = arqui.darFinal();
-				
+
 				int idInicio = (int) inicio.darId();
 				int idFin = (int) fin.darId();
 				double costo = arqui.darCostoHaversiano();
 				total = total + costo;
-				
+
 				if(!mapita.existeVertice(idInicio)) mapita.addVertex(idInicio, inicio);
 				if(!mapita.existeVertice(idFin))	mapita.addVertex(idFin, fin);
 				if(mapita.existeVertice(idInicio) && mapita.existeVertice(idFin)) mapita.addEdge(idInicio, idFin, costo);
-				
+
 				actual = actual.darSiguiente();
 			}
 		}
@@ -1120,31 +1122,31 @@ public class Modelo
 		{
 			System.out.println("Micos y tigrillos...");
 		}
-		
-		
+
+
 		System.out.println("Total de vertices: " + (mapita.darV()-1));
 		System.out.println("Total de arcos: " + (mapita.darE()));
 		System.out.println("Costo total: " + total);
-		
+
 		return mapita;
 	}
 
 	//Ordenar Comparendos
-	
+
 	private ListaEnlazadaQueue darNComparendosGraves(int N)
 	{
 		ListaEnlazadaQueue<Comparendo> resultados = new ListaEnlazadaQueue<Comparendo>();
 		MaxHeapCP<Comparendo> temporal = new MaxHeapCP<Comparendo>(1);
-		
+
 		Node actual = booty.darPrimerElemento();
-		
+
 		while(actual != null)
 		{
 			Comparendo añadir = (Comparendo) actual.darData();
 			temporal.añadir(añadir);		
 			actual = actual.darSiguiente();
 		}
-		
+
 		int conta = 0;
 		while(conta <= N)
 		{
@@ -1152,8 +1154,623 @@ public class Modelo
 			resultados.enqueue(mejor);
 			conta++;
 		}
-		
+
 		return resultados;		
 	}
+
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////ESTUDIANTE AMÉRICA DE CALI///////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	//Requerimiento 1: obtener el camino más corto por comparendos
+
+	public Graph SPPorComparendos(double lat1, double lon1, double lat2, double lon2)
+	{
+		int totalVer=1;
+		double costo=0;
+		double distancia=0;
+
+
+		//Se añaden al mapa los vértices de inicio y fin
+		Vertice inicio= idMinimoAVerti(lat1, lon1);
+		Vertice fin=idMinimoAVerti(lat2, lon2);
+
+		Graph mapita = new Graph (1);
+		mapita.addVertex(inicio.darId(), inicio);
+		mapita.addVertex(fin.darId(), fin);
+
+		System.out.println("----------------------");
+		System.out.println("Vértice de inicio: "+inicio.darId());
+		System.out.println("Vértice de destino: "+fin.darId()+"\n-------------------");
+
+
+		//Buscar el camino más corto
+
+		VirgilVanDijkstra SP= new VirgilVanDijkstra (cositaBienHecha,inicio);
+		ListaEnlazadaStack ruta = SP.pathTo(fin); 
+
+
+		if (ruta!=null)
+		{
+			while(ruta.darTamaño()>0)
+			{
+				//Añadir el arco e imprimir su ruta
+				Arco actual=(Arco)ruta.pop();
+
+				Vertice inici = actual.darInicial();
+				Vertice fini = actual.darFinal();
+
+				int idInicio = (int) actual.darInicial().darId();
+				int idDestino = (int) actual.darFinal().darId();
+				double costoActu = actual.darCantidad();
+
+				mapita.addVertex(idInicio, inici);
+				mapita.addVertex(idDestino, fini);
+
+				mapita.addEdge(idInicio, idDestino, costoActu);
+				Vertices_Bogota_Info infoDestino = (Vertices_Bogota_Info) actual.darFinal().darInfo();
+				double lon = infoDestino.darLon();
+				double lat = infoDestino.darLat();
+
+				System.out.println("Vamos en: " + idDestino + ", Long: " + lon +", Lat: " + lat);
+
+				totalVer++;
+				costo += actual.darCantidad();
+				distancia+=actual.darCostoHaversiano();
+
+
+			}
+
+			System.out.println("---------\n" + " Hemos llegado al destino. El estudiante B no es tan carero y cobra 30K" + "\n-------");
+
+			System.out.println("El número de vértices fue de: "+ totalVer);
+			System.out.println("El número de comparendos encontrados en la ruta es: "+ costo + "\n-----------");
+			System.out.println("La distancia Haversiana recorrida total fue: "+ distancia);
+
+		}
+
+		else 
+		{
+			System.out.println("No existe camino entre esos dos vertices." + "\n---------");
+		}
+
+		return mapita;
+
+
+	}
+
+
+
+	//Requerimiento 2: Determinar la red de comunicaciones que soporte la instalación de cámaras de video en los M puntos donde se presenta el mayor número de comparendos en la ciudad
+
+
+	public Graph pintarMST(Graph Zack)
+	{
+		KruskalMST Cody = new KruskalMST(Zack);
+		ListaEnlazadaQueue moseby = Cody.darMST();
+		Graph tipton = new Graph(1);
+		double total=0;
+		
+		if (moseby!=null)
+		{
+			Node actual = moseby.darPrimerElemento();
+			
+			while (actual!=null)
+			{
+				Arco arqui = (Arco) actual.darData();
+
+				Vertice inicio = arqui.darInicial();
+				Vertice fin = arqui.darFinal();
+
+				int idInicio = (int) inicio.darId();
+				int idFin = (int) fin.darId();
+				double costo = arqui.darCostoHaversiano();
+				total = total + costo;
+
+				if(!tipton.existeVertice(idInicio)) tipton.addVertex(idInicio, inicio);
+				if(!tipton.existeVertice(idFin))    tipton.addVertex(idFin, fin);
+				if(tipton.existeVertice(idInicio) && tipton.existeVertice(idFin)) tipton.addEdge(idInicio, idFin, costo);
+
+				actual = actual.darSiguiente();
+			}
+		}
+		
+
+		System.out.println("Los Vértices implicados en el mst fueron:");
+		int l=0;
+		
+		
+		for (int i =0;i<cositaBienHecha.darV()-1;i++)
+		{
+			Vertice actual = (Vertice)tipton.vertis.getSet(i);
+			
+			if (actual!=null)
+			{
+				l ++;
+				System.out.print(actual.darId()+"-");
+				
+				if(l % 20==0)
+				{
+					System.out.println("");
+				}
+				
+				
+				
+			}
+			
+		}
+		
+		
+		ListaEnlazadaQueue arcs=tipton.arcos;
+		Node a=arcs.darPrimerElemento();
+		System.out.println();
+		System.out.println("Los arcos implicados en el proceso fueron:");
+		l=0;
+		while (a!=null)
+		{
+			
+			Arco act=(Arco)a.data;
+			
+			System.out.print(act.darInicial().darId()+"->"+act.darFinal().darId() + "///");
+			l++;
+			
+			if (l % 15 == 0)
+			{
+				System.out.println();
+			}
+				
+			
+			
+			a=a.darSiguiente();
+		}
+		
+		System.out.println("");
+		System.out.println("Total de vertices: " + (tipton.darV()-1));
+		System.out.println("Total de arcos: " + (tipton.darE()));
+		System.out.println("Distancia total de la red: " + total);
+		
+		System.out.println("Costo total de la red: $"+total*10000);
+
+		return tipton;
+		
+		
+	}
+	
+	
+
+	public Graph redPorNumComparendos(int M)
+	{
+		Vertice[] vertisDeMaxComparendos = organizarVertisPorComparendos(M);
+		Graph mapirri=new Graph(1);
+		double costoTotal=0;
+		
+
+		//Agrego todos los vértices al grafo
+		for(Vertice v: vertisDeMaxComparendos)
+		{
+			mapirri.addVertex(v.darId(), v);
+		}
+
+
+		for (int i =0;i<vertisDeMaxComparendos.length;i++)
+		{
+
+			DijkstraSP sp=new DijkstraSP(cositaBienHecha, vertisDeMaxComparendos[i]);
+
+			for (int j=i+1;j<vertisDeMaxComparendos.length;j++)
+			{
+				//Se encuentra el menor camino en la matriz triangular y se agrega al grafo
+				//Todavía no se calcula el costo porque eso se hace del MST
+
+				ListaEnlazadaStack ruta = sp.pathTo(vertisDeMaxComparendos[j]);
+
+				if (ruta!=null)
+				{
+					while (ruta.darTamaño()>0)
+					{
+						//Añadir el arco al mapa e imprimir su ruta
+						Arco actual = (Arco) ruta.pop();
+
+						Vertice inici = actual.darInicial();
+						Vertice fini = actual.darFinal();
+
+						int idInicio = (int) actual.darInicial().darId();
+						int idDestino = (int) actual.darFinal().darId();
+						double costoActu = actual.darCostoHaversiano();
+
+
+						//Para que no se agreguen dos veces los vértices:
+						
+						
+
+						if (!mapirri.existeVertice(idInicio)) mapirri.addVertex(idInicio, inici);
+						if (!mapirri.existeVertice(idDestino))mapirri.addVertex(idDestino, fini);
+						
+						
+						mapirri.addEdge(idInicio, idDestino, costoActu);
+
+					}
+				}
+			}
+		}
+
+		Graph respuesta=pintarMST(mapirri);
+		return respuesta;
+
+	}
+
+	private Vertice[] organizarVertisPorComparendos(int M)
+	{
+		Vertice[] maxVertis= new Vertice [M];
+		int pos;
+		boolean salir=false;
+		int contadorNull=M;
+
+
+		//Recorrido total de los vértices para ver cuáles son los de mayor número de comparendos
+		for (int i =0;i<cositaBienHecha.darV()-1;i++)
+		{
+			Vertice actual =(Vertice) cositaBienHecha.vertis.getSet(i);
+			salir=false;
+			//Se tiene que evaluar si tiene más comparendos con respecto al que guardo. 
+			//El primero se agrega automáticamente para que comiencen las comparaciones
+
+			if (i==0)
+			{
+				maxVertis[M-1]=actual;
+				contadorNull--;
+			}
+
+
+			//Que no entre si es menor al último de la lista
+			if (actual.darMatch()<=maxVertis[M-1].darMatch())
+				salir=true;
+
+			//Si ya está lleno y es el nuevo mayor
+
+			if (maxVertis[0]!=null && actual.darMatch()>maxVertis[0].darMatch())
+			{
+				ajustarArregloDerecha(0, M, maxVertis, actual);
+				salir=true;
+			}
+
+			//Se revisa en orden inverso con los que he agregado hasta ahora 
+
+			for (int j=M-1;j>contadorNull && !salir;j--)
+			{
+
+				if (actual.darMatch()>maxVertis[j].darMatch() && actual.darMatch()<=maxVertis[j-1].darMatch()) 
+				{
+					//Ajustar el Arreglo
+					if (contadorNull<=0)
+					{
+						ajustarArregloDerecha(j, M, maxVertis, actual);
+					}
+					else
+					{
+						ajustarArregloIzquierda(j,M,maxVertis,actual);
+					}
+
+					salir=true;
+					contadorNull--;
+				}
+			}
+
+			//Si es el nuevo mayor pero el arreglo no está lleno
+
+			if(contadorNull>0 && maxVertis[M-1].darId() != actual.darId() && actual.darMatch()>=maxVertis[contadorNull].darMatch())
+			{
+				maxVertis[contadorNull-1]=actual;
+				contadorNull--;
+			}
+
+
+		}
+
+		return maxVertis;
+
+	}
+
+
+	private void ajustarArregloDerecha(int pos,int M, Vertice[] arreglo, Vertice porAgregar) 
+	{
+		Vertice anterior1=arreglo[pos],anterior2;
+		arreglo[pos]=porAgregar;
+
+		for (int i=pos;i<M-1;i++)
+		{
+
+			anterior2=arreglo[i+1];
+
+			arreglo[i+1]=anterior1;
+
+			anterior1=anterior2;
+
+		}
+
+	}
+
+	private void ajustarArregloIzquierda(int pos, int M, Vertice[] arreglo, Vertice porAgregar)
+	{
+		Vertice anterior1=arreglo[pos-1], anterior2;
+		arreglo[pos-1]=porAgregar;
+
+		for (int i=pos-1;i>0;i--)
+		{
+			anterior2=arreglo[i-1];
+
+			arreglo[i-1]=anterior1;
+
+			anterior1=anterior2;
+		}
+	}
+	
+	
+	/////////////////////////////////////////////////////////////////////////////////
+	////////////////////////REQUERIMIENTOS AMBOS ESTUDIANTES/////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////
+	
+	
+	//1. Obtener los caminos más cortos para que los policías puedan atender los M comparendos más graves
+	
+	//Asigno a las estaciones los vértices a los que son más cercanos
+	
+	public Graph atenderMComparendosGraves(int M)
+	{
+		asignarVertisAEstaciones();
+		Comparendo[] graves = ordenarComparendosPorGravedad(M);
+		int[] idEstaciones = new int[M];
+		ListaEnlazadaStack[] caminos = new ListaEnlazadaStack[M];
+		double[] menorCosto=new double[M];
+		
+		for (ListaEnlazadaStack l: caminos)
+			l=new ListaEnlazadaStack();
+		
+		Graph yaNoMasSemestre = new Graph(1);
+		
+		//Teniendo los comparendos y las estaciones de policía tengo que conseguir el camino más corto entre todos
+		
+		for (int k =0;k<graves.length;k++)
+		{
+			//Encuentro el vértice más cercano
+			menorCosto[k]=1000000000;
+			Vertice loca = idMinimoAVerti(graves[k].darLatitud(), graves[k].darLongitud());
+			
+			DijkstraSP virgil = new DijkstraSP(cositaBienHecha, loca);
+			
+			//Encuentro el camino más cercano con cada estación
+			
+			Node est=estaciones.darPrimerElemento();
+			
+			while (est!=null)
+			{
+				
+				EstPol aux = (EstPol)est.data;
+				Vertice cai = (Vertice)cositaBienHecha.vertis.getSet(aux.darVertiAsociado());
+				
+				ListaEnlazadaStack ruta = virgil.pathTo(cai);
+				
+				if (ruta!=null && ruta.darTamaño()>0)
+				{
+					double costoActual = calcularCostoRuta(ruta);
+					
+					if (costoActual<menorCosto[k])
+					{
+						menorCosto[k]=costoActual;
+						caminos[k]=ruta;
+						idEstaciones[k]=aux.darobjetcID();
+					}
+				}
+				 
+				
+				est=est.darSiguiente();
+			}
+			
+		}
+		
+		//Ya tengo en arreglos los comparendos, los caminos más baratos y sus costos
+		//Agrego al grafo todas las rutas, y luego imprimo los costos para cada comparendo
+		
+		
+		for (int i=0;i<M;i++)
+		{
+			
+			System.out.println("Para el comparendo de ID: "+graves[i].darObjectid()+", se va a la estación con ID: "+idEstaciones[i]+" pasando por los siguientes arcos: ");
+			
+			
+			ListaEnlazadaStack parcial=caminos[i];
+			
+			agregarRutaAGrafo(yaNoMasSemestre, parcial);
+			
+			System.out.println("Por un costo de: "+menorCosto[i]);
+			System.out.println("");
+			
+		}
+		
+		
+		return yaNoMasSemestre;
+		
+		
+	}
+	
+	
+	public void asignarVertisAEstaciones()
+	{
+		Node actual = estaciones.darPrimerElemento();
+		
+		while (actual!=null)
+		{
+			EstPol aux=(EstPol)actual.data;
+			
+			Vertice ganador = idMinimoAVerti(aux.darlatitud(), aux.darlongitud());
+			
+			aux.setVertice((int)ganador.darId());
+			
+			actual=actual.darSiguiente();
+		}
+		
+	}
+	
+	private Comparendo[] ordenarComparendosPorGravedad(int M)
+	{
+		Comparendo[] graves=new Comparendo[M];
+		int pos;
+		boolean salir=false;
+		int contadorNull=M;
+		
+		//Recorro toda la cola de comparendos
+		Node aux = booty.darPrimerElemento();
+		
+		while (aux!=null)
+		{
+			Comparendo actual =(Comparendo) aux.data;
+			
+			salir = false;
+			
+			
+			//Si es el primer elemento de la lista lo agrego para poder comenzar la comparación
+			if (((Comparendo)aux.data).darObjectid() == ((Comparendo)booty.darPrimerElemento().data).darObjectid())
+			{
+				graves[M-1]=actual;
+				contadorNull--;
+			}
+			
+			//Que no entre si es menor al último de la lista
+			
+			if (actual.compareTo(graves[M-1])<=0)
+				salir=true;
+			
+			//Si está lleno y es el nuevo mayor de todos
+			
+			if (graves[0]!=null && actual.compareTo(graves[0])>0)
+			{
+				ajustarArregloDerechaCompis(0,M,graves,actual);
+				salir=true;
+			}
+			
+			//Se revisa en orden inverso con los que llevo hasta ahora
+			
+			for (int i =M-1;i>contadorNull && !salir;i--)
+			{
+				if (actual.compareTo(graves[i])>0 && actual.compareTo(graves[i-1])<=0)
+				{
+					//Ajustar el arreglo
+					if(contadorNull<=0)
+					{
+						ajustarArregloDerechaCompis(i,M,graves,actual);
+					}
+					else
+					{
+						ajustarArregloIzquierdaCompis(i,M,graves,actual);
+					}
+					salir=true;
+					contadorNull--;
+				}
+			}
+			
+			//Si es el nuevo mayor pero el arreglo no está lleno
+			
+			if (contadorNull>0 && graves[M-1].darObjectid()!=actual.darObjectid() && actual.compareTo(graves[contadorNull])>=0)
+			{
+				graves[contadorNull-1]=actual;
+				contadorNull--;
+			}
+			
+			aux=aux.darSiguiente();
+			
+		}
+
+		
+		return graves;
+	}
+	
+	private void ajustarArregloDerechaCompis(int pos,int M, Comparendo[] arreglo, Comparendo porAgregar)
+	{
+		Comparendo anterior1=arreglo[pos],anterior2;
+		arreglo[pos]=porAgregar;
+
+		for (int i=pos;i<M-1;i++)
+		{
+
+			anterior2=arreglo[i+1];
+
+			arreglo[i+1]=anterior1;
+
+			anterior1=anterior2;
+
+		}
+	}
+	
+	private void ajustarArregloIzquierdaCompis(int pos, int M, Comparendo[] arreglo, Comparendo porAgregar)
+	{
+		Comparendo anterior1=arreglo[pos-1], anterior2;
+		arreglo[pos-1]=porAgregar;
+
+		for (int i=pos-1;i>0;i--)
+		{
+			anterior2=arreglo[i-1];
+
+			arreglo[i-1]=anterior1;
+
+			anterior1=anterior2;
+		}
+	}
+	
+	
+	private double calcularCostoRuta(ListaEnlazadaStack ruta)
+	{
+		double respuesta=0;
+		
+		ListaEnlazadaStack carnada=new ListaEnlazadaStack();
+		
+		while (ruta.darTamaño()>0)
+		{
+			Arco actual =(Arco)ruta.pop();
+			carnada.push(actual);
+			
+			respuesta+=actual.darCostoHaversiano();
+		}
+		
+		//Devuelvo la pila a como llegó
+		
+		while (carnada.darTamaño()>0)
+			ruta.push(carnada.pop());
+		
+		
+		return respuesta;
+	}
+	
+	
+	private void agregarRutaAGrafo(Graph grafo, ListaEnlazadaStack ruta)
+	{
+		while (ruta.darTamaño()>0)
+		{
+			//Añado todos los arcos y los vértices, en caso de que no los tenga
+			
+			Arco actual = (Arco) ruta.pop();
+			
+			Vertice inici=actual.darInicial();
+			Vertice fini = actual.darFinal();
+			
+			int idInicio=(int)inici.darId();
+			int idDestino=(int)fini.darId();
+			
+			//Para que no hayan vértices por duplicado
+			
+			
+			if (!grafo.existeVertice(idInicio)) grafo.addVertex(idInicio, inici);
+			if (!grafo.existeVertice(idDestino))grafo.addVertex(idDestino, fini);
+			
+			grafo.addEdge(idInicio, idDestino, actual.darCostoHaversiano());
+			
+			System.out.println( idInicio +"---->"+idDestino);
+		}
+	}
+	
+	
+	
+	
 }
 

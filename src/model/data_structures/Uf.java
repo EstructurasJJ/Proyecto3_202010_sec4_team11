@@ -55,9 +55,9 @@ public class Uf
 
     private void validate(int p) {
         int n = parent.length;
-        if (p < 0 || p >= n) {
-            throw new IllegalArgumentException("index " + p + " is not between 0 and " + (n-1));  
-        }
+//        if (p < 0 || p >= n) {
+//            throw new IllegalArgumentException("index " + p + " is not between 0 and " + (n-1));  
+//        }
     }
 	
 	

@@ -1,5 +1,7 @@
 package model.logic;
 
+import model.data_structures.Vertice;
+
 public class EstPol implements Comparable<EstPol>
 {
 	
@@ -12,6 +14,7 @@ public class EstPol implements Comparable<EstPol>
 	private String mail;
 	private String nombre;
 	private String identificador;
+	private int ganador;
 	
 	
 	public EstPol()
@@ -25,6 +28,7 @@ public class EstPol implements Comparable<EstPol>
 		mail="";
 		nombre="";
 		identificador="";
+		ganador =-1;
 	}
 
 	
@@ -39,6 +43,7 @@ public class EstPol implements Comparable<EstPol>
 	public String darmail(){return mail;}
 	public String darnombre(){return nombre;}
 	public String darindentificador(){return identificador;}
+	public int darVertiAsociado() {return ganador;}
 
 	//MÉTODOS SET
 	
@@ -51,6 +56,7 @@ public class EstPol implements Comparable<EstPol>
 	public void setmail(String p){mail=p;}
 	public void setnombre(String p){nombre=p;}
 	public void setidentificador(String p){identificador=p;}
+	public void setVertice(int p){ganador=p;}
 	
 	
 	@Override
