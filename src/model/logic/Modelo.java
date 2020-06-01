@@ -80,6 +80,7 @@ public class Modelo
 
 	// Reiterar la asignacion
 	private int numReAsig = 1; 
+	private MaxHeapCP<EstPol> caisOrdenados = new MaxHeapCP<EstPol>(1);
 
 	///////////////////////////////////////////////////////Constructor
 
@@ -107,6 +108,13 @@ public class Modelo
 	public ListaEnlazadaQueue<Comparendo> darComaprendo()
 	{
 		return booty;
+	}
+	
+	public MaxHeapCP<EstPol> darCais()
+	{
+		caisOrdenados = new MaxHeapCP<EstPol>(1);
+		ordenarEstacionesPorComparendos();
+		return caisOrdenados;
 	}
 
 	/////////////////////////////////////////////////////////////////////////Lectura del JSON de las estaciones de policía
@@ -1197,7 +1205,7 @@ public class Modelo
 
 				if(!mapita.existeVertice(idInicio)) mapita.addVertex(idInicio, inicio);
 				if(!mapita.existeVertice(idFin))	mapita.addVertex(idFin, fin);
-				if(mapita.existeVertice(idInicio) && mapita.existeVertice(idFin)) mapita.addEdge(idInicio, idFin, costo);
+				mapita.addEdge(idInicio, idFin, costo);
 
 				//Ir reportando los vertices !
 				System.out.println("Inicio: " + idInicio + " --> Final: " + idFin);
@@ -1843,28 +1851,28 @@ public class Modelo
 	}
 
 
-	//2. Identificar las zonas de impacto de las estaciones de policía.
+	///////////////////2. Identificar las zonas de impacto de las estaciones de policía.
 
-	// 1. Asignar los comparendos a las estaciones. 
-	// 2. Repasar que haya ruta entre las estaciones y los comparendos. 
-	// 3. Reasignar aquellos que no tengan ruta. 
-	// 4. Parar cuando todos esten asignados con una ruta viable. 
+		// 1. Asignar los comparendos a las estaciones. 
+		// 2. Repasar que haya ruta entre las estaciones y los comparendos (SP). 
+		// 3. Reasignar aquellos que no tengan ruta. 
+		// 4. Parar cuando todos esten asignados con una ruta viable. 
 
 
 	// Asignamos los comparendos con base a lo pedido.
-	public void zonasDeImpacto()
+	public Graph zonasDeImpacto()
 	{
 		asignarComparendosEstacion(booty, false, 1);
 		policiasEnAccion();
-		System.out.println("Vamos a proceder con pintar el grafo.");
+		System.out.println("Vamos a proceder con pintar el grafo y el reporte final.");
 		System.out.println("-------------------------------------");
+		Graph SacYcody = grafoSuperPlayQueMeTieneSinCabeza();
+		return SacYcody;
 	}
 
 	// Con base a la asignación vamos a ver cuantos fueron correctos y guardar aquellos que no.
 	private void policiasEnAccion()
 	{
-		System.out.println("-------------------------");
-
 		// Asigno los comparendos.
 		ListaEnlazadaQueue<Comparendo> reAsignar = new ListaEnlazadaQueue<Comparendo>();
 
@@ -1903,8 +1911,6 @@ public class Modelo
 
 			}
 
-			System.out.println("Hasta el momento toca reasignar: " + reAsignar.darTamanio());
-
 			//Avanzo al siguiente.
 			revision = revision.darSiguiente();
 
@@ -1918,7 +1924,7 @@ public class Modelo
 			System.out.println("Toca reasignar: " + reAsignar.darTamanio());
 			System.out.println("Re asig: " + numReAsig);
 
-			if(numReAsig < 10)
+			if(numReAsig < 5)
 			{
 				reasignar(reAsignar);
 			}
@@ -1986,31 +1992,23 @@ public class Modelo
 					System.out.println("Vamos en: " + dondeVoy + " asignados.");
 				}
 			}
-			else
-			{
-				if(dondeVoy % 5 == 0)
-				{
-					System.out.println("Vamos en: " + dondeVoy + " asignados.");
-				}
-			}
-
 		}
 
-		System.out.println("-----------------------------");
-		Node verificar = estaciones.darPrimerElemento();
-
-		while(verificar != null)
-		{
-			EstPol actual = (EstPol) verificar.darData();
-			ArrayList<Comparendo> compaAsignados = actual.darRetenidos();
-
-			int compasAsig = compaAsignados.size();
-			int objId = actual.darobjetcID();
-
-			System.out.println("La estación: " + objId + " tiene " + compasAsig + " comparendos asignados.");
-
-			verificar = verificar.darSiguiente();
-		}
+//		System.out.println("-----------------------------");
+//		Node verificar = estaciones.darPrimerElemento();
+//
+//		while(verificar != null)
+//		{
+//			EstPol actual = (EstPol) verificar.darData();
+//			ArrayList<Comparendo> compaAsignados = actual.darRetenidos();
+//
+//			int compasAsig = compaAsignados.size();
+//			int objId = actual.darobjetcID();
+//
+//			System.out.println("La estación: " + objId + " tiene " + compasAsig + " comparendos asignados.");
+//
+//			verificar = verificar.darSiguiente();
+//		}
 	}
 
 	// Recibe un vertice y devuelve el id de la mejor estación.
@@ -2089,5 +2087,83 @@ public class Modelo
 		policiasEnAccion();
 	}
 
+	// Generar reporte final solicitado, con base al grafo a pintar y persistir. 
+	private Graph grafoSuperPlayQueMeTieneSinCabeza()
+	{
+		// 1. Vamos a añadir el vertice de policia.
+		// 2. Vamos a añadir sus comparendos 
+			// Armando el arco como --> Vertice Policia - Vertice Comparendo
+			// Esta arquitectura servira para pintar correctamente.
+		// 3. Repetiremos con base a todas las estaciones-
+		// NOTA: Para facilidad, ordenaremos primero las estaciones por cantidad de comparendos asignados.
+		
+		///////////////////////////////////////////////////////////////////////////////////////////////////
+		
+		Graph drakeEsMejorQueJosh = new Graph(1);
+		MaxHeapCP<EstPol> caisOrdenados = ordenarEstacionesPorComparendos();
+		
+		// Vamos a recorrer todas las estaciones.
+		while(caisOrdenados.darTamaño() > 0)
+		{
+			EstPol actual = caisOrdenados.devolverMax();
+			
+			// Vamos a reportar cada estación con su id y los comparendos asignados.
+			int objId = actual.darobjetcID();
+			int compis = actual.darRetenidos().size();
+			System.out.println("La estación: " + objId + " tiene: " + compis);
+			
+			// Vamos a recuperar el vertice de la policia y añadirlo (si no está ya en el grafo.)
+			Vertice vertiCai = idMinimoAVerti(actual.darlatitud(), actual.darlongitud());
+			if(!drakeEsMejorQueJosh.existeVertice(vertiCai)) drakeEsMejorQueJosh.addVertex(vertiCai.darId(), vertiCai);
+			
+			// Vamos a recorrer los comparendos y recuperar sus vertices.
+			ArrayList<Comparendo> compisCai = actual.darRetenidos();
+			
+			for(int i = 0; i < compisCai.size(); i++)
+			{
+				// Recuperamos el vertice del comparendo.
+				Comparendo compiActual = compisCai.get(i);
+				double lat = compiActual.darLatitud();
+				double lon =  compiActual.darLongitud();
+				
+				Vertice comparendoActual = idMinimoAVerti(lat, lon);
+				
+				// Vamos a añadir el vertice si es que no existe.
+				if(!drakeEsMejorQueJosh.existeVertice(comparendoActual)) drakeEsMejorQueJosh.addVertex(comparendoActual.darId(), comparendoActual);
+				
+				// Vamos a añadir el arco, con la arquitectura correcta. 
+				drakeEsMejorQueJosh.addEdge(vertiCai.darId(), comparendoActual.darId(), 1.0);
+				
+			}			
+		}
+		
+		// Vamos a reportar cuantos arcos y vertices tiene el grafo a pintar.
+		System.out.println("--------------------------------------------------------------------");
+		System.out.println("El grafo, (sin contemplar el camino) tiene la siguiente información:");
+		System.out.println("Total vertices: " + (drakeEsMejorQueJosh.darV()-1));
+		System.out.println("Total arcos: " + drakeEsMejorQueJosh.darE());
+		System.out.println("--------------------------------------------------------------------");
+		
+		return drakeEsMejorQueJosh;
+	}
+	
+	// Ordenar estaciones por gravedad.
+	private MaxHeapCP<EstPol> ordenarEstacionesPorComparendos()
+	{
+		MaxHeapCP<EstPol> ordenados = new MaxHeapCP<EstPol>(1);
+		Node paraOrdenar = estaciones.darPrimerElemento();
+		
+		while(paraOrdenar != null)
+		{
+			EstPol actual = (EstPol) paraOrdenar.darData();
+			ordenados.añadir(actual);
+			
+			paraOrdenar = paraOrdenar.darSiguiente();
+		}
+		
+		caisOrdenados = ordenados;
+		return ordenados;
+	}
+	
 }
 

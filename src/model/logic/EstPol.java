@@ -75,8 +75,10 @@ public class EstPol implements Comparable<EstPol>
 	}
 	
 	@Override
-	public int compareTo(EstPol arg0) {
-		// TODO Auto-generated method stub
-		return 0;
+	public int compareTo(EstPol cai) 
+	{
+		if(this.darRetenidos().size() > cai.darRetenidos().size()) return 1;
+		if(this.darRetenidos().size() < cai.darRetenidos().size()) return -1;
+		else return 0;
 	}
 }

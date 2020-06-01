@@ -9,10 +9,13 @@ import java.util.Scanner;
 import model.data_structures.Arco;
 import model.data_structures.Graph;
 import model.data_structures.ListaEnlazadaQueue;
+import model.data_structures.MaxHeapCP;
 import model.data_structures.Node;
 import model.data_structures.TablaHashSondeoLineal;
 import model.data_structures.Vertice;
+import model.logic.EstPol;
 import model.logic.MapMST;
+import model.logic.MapZonas;
 import model.logic.MapitaSP;
 import model.logic.Maps;
 import model.logic.Modelo;
@@ -224,8 +227,20 @@ public class Controller {
 				break;
 				
 			case 9:
+
+				System.out.println("Digite el número de comparendos que desea mostrar por estación.");
+				int numCai = lector.nextInt();
 				
-				modelo.zonasDeImpacto();
+				System.out.println("--------------------------");
+				System.out.println("Empezamos :)");
+				System.out.println("--------------------------");
+				
+				Graph LosHechiceros = modelo.zonasDeImpacto();
+				MaxHeapCP<EstPol> hola = modelo.darCais();
+				
+				MapZonas queBuenosNombres = new MapZonas(LosHechiceros, hola, numCai);
+				System.out.println("Arriba vacaciones");
+				queBuenosNombres.initFrame("Arriba vacaciones");
 				
 				break;
 			
