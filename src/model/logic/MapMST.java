@@ -18,6 +18,7 @@ import com.teamdev.jxmaps.MapReadyHandler;
 import com.teamdev.jxmaps.MapStatus;
 import com.teamdev.jxmaps.MapTypeControlOptions;
 import com.teamdev.jxmaps.Marker;
+import com.teamdev.jxmaps.PolygonOptions;
 import com.teamdev.jxmaps.Polyline;
 import com.teamdev.jxmaps.PolylineOptions;
 import com.teamdev.jxmaps.swing.MapView;
@@ -64,9 +65,9 @@ public class MapMST<K extends Comparable<K>,V extends Comparable<V>> extends Map
 
 					//Camino
 					PolylineOptions pathOpt = new PolylineOptions();
-					pathOpt.setStrokeColor("#000019 ");	  
-					pathOpt.setStrokeOpacity(1.75);
-					pathOpt.setStrokeWeight(1.5);
+					pathOpt.setStrokeColor("#b7e8e8");	  
+					pathOpt.setStrokeOpacity(10);
+					pathOpt.setStrokeWeight(0.5);
 					pathOpt.setGeodesic(false);
 
 					// Recorrer los vertices
@@ -122,7 +123,7 @@ public class MapMST<K extends Comparable<K>,V extends Comparable<V>> extends Map
 							}
 
 							// Linea del camino
-							Polyline path = new Polyline(map); 														
+							Polyline path = new Polyline(map); 
 							path.setOptions(pathOpt); 
 							path.setPath(locat);
 							cont++;

@@ -3,6 +3,7 @@ package model.logic;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 
@@ -25,6 +26,9 @@ public class Comparendo implements Comparable<Comparendo>
 	private Date FECHA_HORA;
 	private String MUNICIPIO;
 	//
+	
+	//Tener referencia de un solo cercano
+	private ArrayList<Integer> cercano = new ArrayList<Integer>();
 
 	public Comparendo ()
 	{
@@ -146,6 +150,18 @@ public class Comparendo implements Comparable<Comparendo>
 	public void asignarLongitud(double i)
 	{
 		longitud = i; 
+	}
+	
+	// Asiganr un cercano importante
+	
+	public void asignarCercano (int cerca)
+	{
+		cercano.add(cerca);
+	}
+	
+	public ArrayList darCerca()
+	{
+		return cercano;
 	}
 
 	public int compareTo(Comparendo compi) 

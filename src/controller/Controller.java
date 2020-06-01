@@ -144,8 +144,11 @@ public class Controller {
 				break;
 
 			case 5:
-
-				Graph mapita = (Graph) modelo.vamosAver();	
+				
+				System.out.println("Digite el número de lugares para la red");
+				int josh = lector.nextInt();
+				
+				Graph mapita = (Graph) modelo.montarRedDeTombos(josh);
 
 				MapMST Spam = new MapMST(mapita);
 				System.out.println("Quiero perico de calidad");
@@ -191,6 +194,7 @@ public class Controller {
 				}
 
 				break;
+				
 			case 7: 
 
 				System.out.println("Digite el número de lugares para la red");
@@ -216,6 +220,12 @@ public class Controller {
 				MapitaSP yaNoSeMeOcurrenNombres = new MapitaSP(yaNoMasSemestre);
 				System.out.println("Ya el semestre valió");
 				yaNoSeMeOcurrenNombres.initFrame("Ya el semestre valió");
+				
+				break;
+				
+			case 9:
+				
+				modelo.zonasDeImpacto();
 				
 				break;
 			

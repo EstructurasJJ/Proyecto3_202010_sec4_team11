@@ -1,5 +1,8 @@
 package model.logic;
 
+import java.util.ArrayList;
+
+import model.data_structures.ListaEnlazadaQueue;
 import model.data_structures.Vertice;
 
 public class EstPol implements Comparable<EstPol>
@@ -15,6 +18,8 @@ public class EstPol implements Comparable<EstPol>
 	private String nombre;
 	private String identificador;
 	private int ganador;
+	
+	private ArrayList<Comparendo> detenidosEnCai = new ArrayList<Comparendo>();
 	
 	
 	public EstPol()
@@ -58,6 +63,16 @@ public class EstPol implements Comparable<EstPol>
 	public void setidentificador(String p){identificador=p;}
 	public void setVertice(int p){ganador=p;}
 	
+	
+	public ArrayList darRetenidos()
+	{
+		return detenidosEnCai;
+	}
+	
+	public void añadirDetenido(Comparendo retener)
+	{
+		detenidosEnCai.add(retener);
+	}
 	
 	@Override
 	public int compareTo(EstPol arg0) {

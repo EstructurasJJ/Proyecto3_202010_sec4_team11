@@ -12,6 +12,7 @@ public class Vertice <K extends Comparable<K>, V extends Comparable<V>> implemen
 	
 	//Asignar sus cercanos a el.
 	private int match;
+
 	
 	private ArrayList<Arco> vecinos;
 	

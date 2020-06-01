@@ -17,7 +17,7 @@ public class KruskalMST
 		while(actual != null)
 		{
 			Arco arqui = (Arco) actual.darData();
-			pq.añadir(arqui);							//TODO JUANJO
+			pq.añadir(arqui);						 //TODO JUANJO --> Al añadir se hace por el comparador de arco, que es costo harvesiano.	
 			actual = actual.darSiguiente();
 		}
 		
