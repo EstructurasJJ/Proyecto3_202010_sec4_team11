@@ -18,7 +18,7 @@ public class View
 			System.out.println("2. Encontrar el vertice más cercano dada una ubicación geografica.");
 			System.out.println("3. Desplegar grafo limitado en mapa.");
 			System.out.println("4. Menor camino entre dos ubicaciones por distancia Haversiana.");
-			System.out.println("5. Intentar Kruskal..");
+			System.out.println("5. Montar red de vigilancia para los comparendos más graves");
 			System.out.println("6. Buscar el menor camino entre dos ubicaciones por número de comparendos");
 			System.out.println("7. Generar red de vigilancia para los M vértices con más comparendos");
 			System.out.println("8. Obtener caminos más cortos para que los policías puedan atender los M comparendos más graves");

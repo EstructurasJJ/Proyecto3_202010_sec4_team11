@@ -140,7 +140,7 @@ public class Controller {
 				}
 				else
 				{
-					System.out.println("No son validas las coordenadas.");
+					System.out.println("No son válidas las coordenadas.");
 				}
 
 
@@ -193,7 +193,7 @@ public class Controller {
 				}
 				else
 				{
-					System.out.println("No son validas las coordenadas.");
+					System.out.println("Usted me está diciendo que vaya como a Soacha, yo pot allá no voy.");
 				}
 
 				break;
@@ -241,6 +241,8 @@ public class Controller {
 				MapZonas queBuenosNombres = new MapZonas(LosHechiceros, hola, numCai);
 				System.out.println("Arriba vacaciones");
 				queBuenosNombres.initFrame("Arriba vacaciones");
+				
+				modelo.imprmirElMejorGrafoDeLaHistoria(LosHechiceros);
 				
 				break;
 			

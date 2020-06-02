@@ -109,7 +109,7 @@ public class Modelo
 	{
 		return booty;
 	}
-	
+
 	public MaxHeapCP<EstPol> darCais()
 	{
 		caisOrdenados = new MaxHeapCP<EstPol>(1);
@@ -1853,10 +1853,10 @@ public class Modelo
 
 	///////////////////2. Identificar las zonas de impacto de las estaciones de policía.
 
-		// 1. Asignar los comparendos a las estaciones. 
-		// 2. Repasar que haya ruta entre las estaciones y los comparendos (SP). 
-		// 3. Reasignar aquellos que no tengan ruta. 
-		// 4. Parar cuando todos esten asignados con una ruta viable. 
+	// 1. Asignar los comparendos a las estaciones. 
+	// 2. Repasar que haya ruta entre las estaciones y los comparendos (SP). 
+	// 3. Reasignar aquellos que no tengan ruta. 
+	// 4. Parar cuando todos esten asignados con una ruta viable. 
 
 
 	// Asignamos los comparendos con base a lo pedido.
@@ -1994,21 +1994,21 @@ public class Modelo
 			}
 		}
 
-//		System.out.println("-----------------------------");
-//		Node verificar = estaciones.darPrimerElemento();
-//
-//		while(verificar != null)
-//		{
-//			EstPol actual = (EstPol) verificar.darData();
-//			ArrayList<Comparendo> compaAsignados = actual.darRetenidos();
-//
-//			int compasAsig = compaAsignados.size();
-//			int objId = actual.darobjetcID();
-//
-//			System.out.println("La estación: " + objId + " tiene " + compasAsig + " comparendos asignados.");
-//
-//			verificar = verificar.darSiguiente();
-//		}
+		//		System.out.println("-----------------------------");
+		//		Node verificar = estaciones.darPrimerElemento();
+		//
+		//		while(verificar != null)
+		//		{
+		//			EstPol actual = (EstPol) verificar.darData();
+		//			ArrayList<Comparendo> compaAsignados = actual.darRetenidos();
+		//
+		//			int compasAsig = compaAsignados.size();
+		//			int objId = actual.darobjetcID();
+		//
+		//			System.out.println("La estación: " + objId + " tiene " + compasAsig + " comparendos asignados.");
+		//
+		//			verificar = verificar.darSiguiente();
+		//		}
 	}
 
 	// Recibe un vertice y devuelve el id de la mejor estación.
@@ -2092,78 +2092,202 @@ public class Modelo
 	{
 		// 1. Vamos a añadir el vertice de policia.
 		// 2. Vamos a añadir sus comparendos 
-			// Armando el arco como --> Vertice Policia - Vertice Comparendo
-			// Esta arquitectura servira para pintar correctamente.
+		// Armando el arco como --> Vertice Policia - Vertice Comparendo
+		// Esta arquitectura servira para pintar correctamente.
 		// 3. Repetiremos con base a todas las estaciones-
 		// NOTA: Para facilidad, ordenaremos primero las estaciones por cantidad de comparendos asignados.
-		
+
 		///////////////////////////////////////////////////////////////////////////////////////////////////
-		
+
 		Graph drakeEsMejorQueJosh = new Graph(1);
 		MaxHeapCP<EstPol> caisOrdenados = ordenarEstacionesPorComparendos();
-		
+
 		// Vamos a recorrer todas las estaciones.
 		while(caisOrdenados.darTamaño() > 0)
 		{
 			EstPol actual = caisOrdenados.devolverMax();
-			
+
 			// Vamos a reportar cada estación con su id y los comparendos asignados.
 			int objId = actual.darobjetcID();
 			int compis = actual.darRetenidos().size();
 			System.out.println("La estación: " + objId + " tiene: " + compis);
-			
+
 			// Vamos a recuperar el vertice de la policia y añadirlo (si no está ya en el grafo.)
 			Vertice vertiCai = idMinimoAVerti(actual.darlatitud(), actual.darlongitud());
 			if(!drakeEsMejorQueJosh.existeVertice(vertiCai)) drakeEsMejorQueJosh.addVertex(vertiCai.darId(), vertiCai);
-			
+
 			// Vamos a recorrer los comparendos y recuperar sus vertices.
 			ArrayList<Comparendo> compisCai = actual.darRetenidos();
-			
+
 			for(int i = 0; i < compisCai.size(); i++)
 			{
 				// Recuperamos el vertice del comparendo.
 				Comparendo compiActual = compisCai.get(i);
 				double lat = compiActual.darLatitud();
 				double lon =  compiActual.darLongitud();
-				
+
 				Vertice comparendoActual = idMinimoAVerti(lat, lon);
-				
+
 				// Vamos a añadir el vertice si es que no existe.
 				if(!drakeEsMejorQueJosh.existeVertice(comparendoActual)) drakeEsMejorQueJosh.addVertex(comparendoActual.darId(), comparendoActual);
-				
+
 				// Vamos a añadir el arco, con la arquitectura correcta. 
 				drakeEsMejorQueJosh.addEdge(vertiCai.darId(), comparendoActual.darId(), 1.0);
-				
+
 			}			
 		}
-		
+
 		// Vamos a reportar cuantos arcos y vertices tiene el grafo a pintar.
 		System.out.println("--------------------------------------------------------------------");
 		System.out.println("El grafo, (sin contemplar el camino) tiene la siguiente información:");
 		System.out.println("Total vertices: " + (drakeEsMejorQueJosh.darV()-1));
 		System.out.println("Total arcos: " + drakeEsMejorQueJosh.darE());
 		System.out.println("--------------------------------------------------------------------");
-		
+
 		return drakeEsMejorQueJosh;
 	}
-	
+
 	// Ordenar estaciones por gravedad.
 	private MaxHeapCP<EstPol> ordenarEstacionesPorComparendos()
 	{
 		MaxHeapCP<EstPol> ordenados = new MaxHeapCP<EstPol>(1);
 		Node paraOrdenar = estaciones.darPrimerElemento();
-		
+
 		while(paraOrdenar != null)
 		{
 			EstPol actual = (EstPol) paraOrdenar.darData();
 			ordenados.añadir(actual);
-			
+
 			paraOrdenar = paraOrdenar.darSiguiente();
 		}
-		
+
 		caisOrdenados = ordenados;
 		return ordenados;
 	}
-	
+
+
+	//////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////Persistir el Grafo///////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////
+
+	public void imprmirElMejorGrafoDeLaHistoria(Graph base) 
+	{
+
+		TablaHashSondeoLineal vertex = base.vertis;
+		ListaEnlazadaQueue arcos = base.arcos;
+		char comillas = '"';
+
+
+		try 
+		{
+			FileWriter file = new FileWriter("./data/grafoZonasDeImpacto.json");
+
+
+			//Apertura del Archivo
+
+			file.write("{");
+			file.write(comillas+"type"+comillas+":"+comillas+"FeatureCollection"+comillas+",");
+			file.write(comillas+"crs"+comillas+":");
+			file.write("{");
+			file.write(comillas+"type"+comillas+":"+comillas+"name"+comillas +",");
+			file.write(comillas +"properties"+comillas+":");
+			file.write("{");
+			file.write(comillas +"name"+comillas+":"+comillas+"EPSG:4686"+comillas);
+			file.write("}");
+			file.write("},");
+			file.write(comillas+"features"+comillas+":[");
+
+
+			//Lo que se debe imprimir para cada vértice
+			//vertex.darDatos()
+
+			for (int i=0;i<cositaBienHecha.darV()-1;i++)
+			{
+				Vertice aux = (Vertice) vertex.getSet(i);
+				if(aux!=null)
+				{
+				Integer id = (Integer) aux.darId();
+				Vertices_Bogota_Info info = (Vertices_Bogota_Info) aux.darInfo();
+				Double lat = info.darLat(), lon=info.darLon();
+
+				file.write("{");	
+				file.write(comillas+"type"+comillas+":"+comillas+"Feature"+comillas+",");
+				file.write(comillas+"id"+comillas+":"+id+",");
+				file.write(comillas+"geometry"+comillas+":{");
+				file.write(comillas+"type"+comillas+":"+comillas+"Point"+comillas+",");
+				file.write(comillas+"coordinates"+comillas+":[");
+				file.write(lon+",");
+				file.write(lat+"");
+				file.write("]");
+				file.write("},");
+				file.write(comillas+"properties"+comillas+":");
+				file.write("{");
+				file.write(comillas+"OBJECTID"+comillas+":"+id+",");
+				file.write(comillas+"LATITUD"+comillas+":"+lat+",");
+				file.write(comillas+"LONGITUD"+comillas+":"+lon+"");
+				file.write("}");
+				file.write("},");
+				}
+			}
+
+
+			//Lo que se debe imprimir para cada arco:
+
+			Node actual = arcos.darPrimerElemento();
+
+			while (actual!=null)
+			{
+				Arco aux= (Arco) actual.data;
+
+				file.write("{");	
+				file.write(comillas+"type"+comillas+":"+comillas+"Feature"+comillas+",");
+				file.write(comillas+"id"+comillas+":0,");
+
+				file.write(comillas+"properties"+comillas+":");
+				file.write("{");
+
+				file.write(comillas+"ORIGEN"+comillas+":"+aux.darInicial().darId()+",");
+				file.write(comillas+"DESTINO"+comillas+":"+aux.darFinal().darId()+",");
+				file.write(comillas+"COSTO"+comillas+":"+aux.darCostoHaversiano());
+				file.write("}");
+
+
+				//Este depende de si es el último o de si quedan más con la coma
+
+				if (actual.darSiguiente()==null)
+				{
+					file.write("}");
+				}
+				else
+				{
+					file.write("},");
+				}
+
+				actual= actual.darSiguiente();
+			}
+
+
+			//Cerrar el JSON
+			file.write("]");
+			file.write("}");
+
+
+			file.close();
+		} 
+		catch (IOException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+
+	}
+
+
+
+
+
+
+
 }
 
